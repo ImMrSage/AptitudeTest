@@ -1,141 +1,16 @@
-:root {
-  color-scheme: dark;
-  font-family: "Segoe UI", system-ui, sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 32%),
-    linear-gradient(180deg, #081120 0%, #10192b 45%, #07101d 100%);
-  color: #f8fafc;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  min-height: 100%;
-  margin: 0;
-}
-
-body {
+.app-shell-react {
   min-height: 100vh;
 }
 
-.app-shell {
-  min-height: 100vh;
-  padding: 24px;
-}
-
-.app-header {
-  max-width: 1200px;
-  margin: 0 auto 20px;
-  padding: 28px 30px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 24px;
-  background: rgba(8, 15, 29, 0.78);
-  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
-  backdrop-filter: blur(14px);
-}
-
-.app-kicker {
-  margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #67e8f9;
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3rem);
-}
-
-.app-copy {
+.react-shell-note {
   max-width: 760px;
-  margin: 12px 0 0;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #cbd5e1;
-}
-
-.app-main {
-  max-width: 1200px;
   margin: 0 auto;
-}
-
-.app-panel {
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 24px;
-  background: rgba(15, 23, 42, 0.76);
-  overflow: hidden;
-  box-shadow: 0 20px 55px rgba(2, 6, 23, 0.32);
-}
-
-.panel-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 22px 24px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
-}
-
-.panel-head h2 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-.panel-head p {
-  margin: 8px 0 0;
-  color: #cbd5e1;
+  padding: 10px 16px 0;
+  color: #94a3b8;
+  font-size: 14px;
   line-height: 1.5;
 }
 
-.panel-link {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #22c55e, #38bdf8);
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.trainer-frame-wrap {
-  padding: 16px;
-}
-
-.trainer-frame {
-  width: 100%;
-  min-height: 85vh;
-  border: 0;
-  border-radius: 18px;
-  background: #fff;
-}
-
-@media (max-width: 720px) {
-  .app-shell {
-    padding: 14px;
-  }
-
-  .app-header,
-  .panel-head,
-  .trainer-frame-wrap {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .panel-head {
-    flex-direction: column;
-  }
-
-  .trainer-frame {
-    min-height: 78vh;
-  }
+.inline-link {
+  color: #67e8f9;
 }
