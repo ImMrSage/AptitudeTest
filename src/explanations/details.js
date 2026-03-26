@@ -33,11 +33,11 @@ export function matchAllNumbers(text) {
         }
 
         if (q.variantKey === 'numerical-pie-growth') {
-          const promptNums = matchAllNumbers(q.prompt);
           const totalMatch = q.visualHtml.match(/Total sold: (\d+) million bottles/);
+          const growthMatch = q.prompt.match(/by (\d+)%/);
           const regionMatch = q.prompt.match(/sales in (.+?) by \d+%/);
           const total = totalMatch ? Number(totalMatch[1]) : 0;
-          const growth = promptNums.length ? promptNums[promptNums.length - 1] : 0;
+          const growth = growthMatch ? Number(growthMatch[1]) : 0;
           const region = regionMatch ? regionMatch[1] : '';
           const regionPctMatch = q.visualHtml.match(new RegExp(region.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ': (\\d+)%'));
           const regionPct = regionPctMatch ? Number(regionPctMatch[1]) : 0;
@@ -60,9 +60,10 @@ export function matchAllNumbers(text) {
           const multMatch = q.visualHtml.match(/1 bar unit = ([\d,]+) loans/);
           const mult = multMatch ? Number(multMatch[1].replace(/,/g, '')) : 0;
           const values = [...q.visualHtml.matchAll(/<div>(\d+)<\/div>\s*<\/div>/g)].map(m => Number(m[1])).slice(0, 5);
-          const promptNums = matchAllNumbers(q.prompt);
-          const ratio = promptNums[0] || 1;
-          const fine = promptNums[1] || 0;
+          const ratioMatch = q.prompt.match(/1 in (\d+) loans/);
+          const fineMatch = q.prompt.match(/fine of \$(\d+)/);
+          const ratio = ratioMatch ? Number(ratioMatch[1]) : 1;
+          const fine = fineMatch ? Number(fineMatch[1]) : 0;
           const totalUnits = values.reduce((a, b) => a + b, 0);
           const totalLoans = totalUnits * mult;
           const late = totalLoans / ratio;
@@ -243,3 +244,4 @@ export function matchAllNumbers(text) {
 
       return '';
     }
+

@@ -1,4 +1,5 @@
 import { getTimerSeconds, pick, randInt, shuffle } from '../engine-core'
+import { generateErrorCheck } from './errorCheck'
 
 export function generateDiagrammatic(difficulty) {
       const patterns = difficulty === 'easy'
@@ -323,3 +324,4 @@ export function generateDiagrammatic(difficulty) {
         pattern: 'For planning questions, build the timeline in sequence and ignore unrelated times unless the prompt asks for them.'
       };
     }
+

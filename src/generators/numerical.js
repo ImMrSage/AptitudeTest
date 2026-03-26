@@ -1,4 +1,5 @@
 import { getTimerSeconds, pick, randInt, shuffle } from '../engine-core'
+import { generateAssessmentDayNumerical } from './numericalAssessmentDay'
 
 export function pieSvg(cx, cy, r, percentages, colors) {
       let startAngle = -Math.PI / 2;
@@ -18,10 +19,10 @@ export function pieSvg(cx, cy, r, percentages, colors) {
 
     export function generateNumerical(difficulty) {
       const types = difficulty === 'easy'
-        ? ['bar-profit', 'pie-growth', 'factory-output', 'averages']
+        ? ['bar-profit', 'pie-growth', 'factory-output', 'averages', 'assessmentday']
         : difficulty === 'medium'
-        ? ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work']
-        : ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison'];
+        ? ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'assessmentday']
+        : ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'assessmentday'];
       const type = pick(types);
       if (type === 'bar-profit') return numericalBarProfit(difficulty);
       if (type === 'loan-fine') return numericalLoanFine(difficulty);
@@ -30,6 +31,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       if (type === 'averages') return numericalAverages(difficulty);
       if (type === 'time-work') return numericalTimeWork(difficulty);
       if (type === 'table-comparison') return numericalTableComparison(difficulty);
+      if (type === 'assessmentday') return generateAssessmentDayNumerical(difficulty);
       return numericalPieGrowth(difficulty);
     }
 
@@ -361,3 +363,4 @@ export function pieSvg(cx, cy, r, percentages, colors) {
     export function askWholeNumber(value) {
       return Math.abs(value - Math.round(value)) < 0.001;
     }
+
