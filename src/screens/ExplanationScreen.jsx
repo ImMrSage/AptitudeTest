@@ -32,7 +32,9 @@ export default function ExplanationScreen({ answer, explanationHtml, isReview, i
           <div><strong>Correct answer:</strong> {question.options[question.correctIndex].plain}</div>
           {answer && answer.answerIndex >= 0
             ? <div className="mt8"><strong>Your answer:</strong> {question.options[answer.answerIndex].plain}</div>
-            : <div className="mt8"><strong>Your answer:</strong> Time out</div>}
+            : answer?.timedOut
+              ? <div className="mt8"><strong>Your answer:</strong> Time out</div>
+              : <div className="mt8"><strong>Your answer:</strong> Not answered yet</div>}
           <div className="statement mt12" dangerouslySetInnerHTML={renderHtml(explanationHtml)} />
           <div className="mt12"><strong>What to remember:</strong> {question.pattern}</div>
           <button className="cta" onClick={onContinue}>

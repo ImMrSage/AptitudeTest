@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   buildDetailedExplanationHtml,
   createInitialState,
@@ -11,6 +11,7 @@ import {
 
 export function useTrainerSession() {
   const [state, setState] = useState(() => createInitialState())
+  const activeTimedQuestionIdRef = useRef(null)
 
   const currentIndex = state.reviewIndex ?? state.questionIndex
   const currentQuestion = state.questions[currentIndex] || null
@@ -25,7 +26,14 @@ export function useTrainerSession() {
       return undefined
     }
 
-    setState(prev => ({ ...prev, secondsLeft: currentQuestion.timer, startedAt: Date.now() }))
+    if (activeTimedQuestionIdRef.current !== currentQuestion.id) {
+      activeTimedQuestionIdRef.current = currentQuestion.id
+      if (state.secondsLeft <= 0) {
+        setState(prev => ({ ...prev, secondsLeft: currentQuestion.timer, startedAt: Date.now() }))
+      } else {
+        setState(prev => ({ ...prev, startedAt: Date.now() }))
+      }
+    }
 
     const id = window.setInterval(() => {
       setState(prev => {
@@ -40,8 +48,8 @@ export function useTrainerSession() {
         }
 
         window.clearInterval(id)
-        const q = prev.questions[prev.questionIndex]
-        if (!q) return prev
+        const question = prev.questions[prev.questionIndex]
+        if (!question) return prev
 
         const nextAnswers = [...prev.answers]
         nextAnswers[prev.questionIndex] = { answerIndex: -1, timedOut: true }
@@ -50,15 +58,22 @@ export function useTrainerSession() {
           totalQuestions: prev.stats.totalQuestions + 1,
           byTopic: {
             ...prev.stats.byTopic,
-            [q.topic]: {
-              ...prev.stats.byTopic[q.topic],
-              total: prev.stats.byTopic[q.topic].total + 1,
+            [question.topic]: {
+              ...prev.stats.byTopic[question.topic],
+              total: prev.stats.byTopic[question.topic].total + 1,
             },
           },
         }
 
         if (prev.mode === 'training' || prev.mode === 'drill') {
-          return { ...prev, answers: nextAnswers, stats: nextStats, showExplanation: true, lastView: 'explanation', secondsLeft: 0 }
+          return {
+            ...prev,
+            answers: nextAnswers,
+            stats: nextStats,
+            showExplanation: true,
+            lastView: 'explanation',
+            secondsLeft: 0,
+          }
         }
 
         if (prev.questionIndex >= prev.questions.length - 1) {
@@ -69,6 +84,7 @@ export function useTrainerSession() {
             secondsLeft: 0,
             sessionDone: true,
             lastView: 'summary',
+            showExplanation: false,
           }
         }
 
@@ -76,19 +92,21 @@ export function useTrainerSession() {
           ...prev,
           answers: nextAnswers,
           stats: nextStats,
-          secondsLeft: prev.questions[prev.questionIndex + 1].timer,
           questionIndex: prev.questionIndex + 1,
+          secondsLeft: prev.questions[prev.questionIndex + 1].timer,
           lastQuestionTemplateSignature: questionTemplateSignature(prev.questions[prev.questionIndex + 1]),
+          lastView: 'question',
+          showExplanation: false,
         }
       })
     }, 1000)
 
     return () => window.clearInterval(id)
-  }, [currentQuestion, state.mode, state.reviewIndex, state.sessionDone, state.showExplanation])
+  }, [currentQuestion, state.mode, state.reviewIndex, state.secondsLeft, state.sessionDone, state.showExplanation])
 
   const timerText = !inSession || state.mode === 'training'
     ? '--:--'
-    : state.showExplanation && currentAnswer?.timedOut
+    : currentAnswer?.timedOut && state.showExplanation
       ? '00:00'
       : formatTime(state.secondsLeft)
 
@@ -135,20 +153,20 @@ export function useTrainerSession() {
   function saveAnswer(answerIndex, timedOut = false) {
     setState(prev => {
       const idx = prev.questionIndex
-      const q = prev.questions[idx]
-      if (!q || prev.answers[idx] !== null) return prev
+      const question = prev.questions[idx]
+      if (!question || prev.answers[idx] !== null) return prev
 
       const nextAnswers = [...prev.answers]
       nextAnswers[idx] = { answerIndex, timedOut: !!timedOut }
       const nextStats = {
         ...prev.stats,
         totalQuestions: prev.stats.totalQuestions + 1,
-        correct: prev.stats.correct + (answerIndex === q.correctIndex ? 1 : 0),
+        correct: prev.stats.correct + (answerIndex === question.correctIndex ? 1 : 0),
         byTopic: {
           ...prev.stats.byTopic,
-          [q.topic]: {
-            total: prev.stats.byTopic[q.topic].total + 1,
-            correct: prev.stats.byTopic[q.topic].correct + (answerIndex === q.correctIndex ? 1 : 0),
+          [question.topic]: {
+            total: prev.stats.byTopic[question.topic].total + 1,
+            correct: prev.stats.byTopic[question.topic].correct + (answerIndex === question.correctIndex ? 1 : 0),
           },
         },
       }
@@ -157,7 +175,7 @@ export function useTrainerSession() {
     })
   }
 
-  function nextQuestion(skipExplanation = false) {
+  function nextQuestion() {
     setState(prev => {
       const nextIndex = prev.questionIndex + 1
       if (prev.questionIndex >= prev.questions.length - 1) {
@@ -176,7 +194,7 @@ export function useTrainerSession() {
         questionIndex: nextIndex,
         showExplanation: false,
         reviewIndex: null,
-        lastView: skipExplanation ? 'question' : prev.lastView,
+        lastView: 'question',
         secondsLeft: prev.questions[nextIndex]?.timer || 0,
         startedAt: Date.now(),
         lastQuestionTemplateSignature: prev.questions[nextIndex] ? questionTemplateSignature(prev.questions[nextIndex]) : prev.lastQuestionTemplateSignature,
@@ -185,6 +203,7 @@ export function useTrainerSession() {
   }
 
   function resetToHome() {
+    activeTimedQuestionIdRef.current = null
     setState(prev => ({
       ...prev,
       questions: [],
@@ -207,6 +226,7 @@ export function useTrainerSession() {
         return { ...prev, lastView: 'home' }
       }
       if (prev.lastView === 'summary') {
+        activeTimedQuestionIdRef.current = null
         return {
           ...prev,
           questions: [],
@@ -224,6 +244,7 @@ export function useTrainerSession() {
         return { ...prev, showExplanation: false, lastView: 'question' }
       }
       if (prev.lastView === 'question') {
+        activeTimedQuestionIdRef.current = null
         return {
           ...prev,
           questions: [],
@@ -247,25 +268,28 @@ export function useTrainerSession() {
       setState(prev => ({ ...prev, showExplanation: true, lastView: 'explanation' }))
       return
     }
-    nextQuestion(true)
+    nextQuestion()
   }
 
   function skipQuestion() {
     if (state.sessionDone || !state.questions.length || state.showExplanation || state.reviewIndex != null) return
     saveAnswer(-1, true)
     if (state.mode === 'training' || state.mode === 'drill') {
-      setState(prev => ({ ...prev, showExplanation: true, lastView: 'explanation' }))
+      setState(prev => ({ ...prev, showExplanation: true, lastView: 'explanation', secondsLeft: 0 }))
       return
     }
-    nextQuestion(true)
+    nextQuestion()
   }
 
   function openExplanation() {
-    if (!state.questions.length) return
-    const hasAnswer = state.answers[state.questionIndex] !== null
-    if (state.showExplanation || state.reviewIndex != null || hasAnswer) {
-      setState(prev => ({ ...prev, lastView: 'explanation', showExplanation: true }))
+    if (!state.questions.length || state.sessionDone || state.reviewIndex != null) return
+
+    if (state.lastView === 'explanation') {
+      setState(prev => ({ ...prev, lastView: 'question', showExplanation: false }))
+      return
     }
+
+    setState(prev => ({ ...prev, lastView: 'explanation', showExplanation: true }))
   }
 
   function openStats() {
@@ -273,11 +297,11 @@ export function useTrainerSession() {
   }
 
   function openReviewItem(index) {
-    setState(prev => ({ ...prev, reviewIndex: index, lastView: 'explanation' }))
+    setState(prev => ({ ...prev, reviewIndex: index, lastView: 'explanation', showExplanation: true }))
   }
 
   function closeReview() {
-    setState(prev => ({ ...prev, reviewIndex: null, lastView: 'summary' }))
+    setState(prev => ({ ...prev, reviewIndex: null, lastView: 'summary', showExplanation: false }))
   }
 
   function updateSetupField(field, value) {
@@ -311,4 +335,3 @@ export function useTrainerSession() {
     },
   }
 }
-

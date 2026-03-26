@@ -1,7 +1,7 @@
-export default function BottomTabs({ hasQuestions, hasVisibleExplanation, onExplain, onReset, onStats }) {
+export default function BottomTabs({ showExplain, onExplain, onReset, onStats }) {
   return (
     <div className="bottom-tabs">
-      <button className="tab green" onClick={onExplain} disabled={!hasQuestions || !hasVisibleExplanation}>? Explain</button>
+      {showExplain ? <button className="tab green" onClick={onExplain}>? Explain</button> : null}
       <button className="tab blue" onClick={onStats}>Stats</button>
       <button className="tab red" onClick={onReset}>Reset</button>
     </div>

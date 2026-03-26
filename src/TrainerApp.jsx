@@ -22,8 +22,7 @@ function TrainerApp() {
     weakTopic,
     actions,
   } = useTrainerSession()
-
-  const hasVisibleExplanation = state.showExplanation || state.reviewIndex != null || state.answers[state.questionIndex] !== null
+  const showExplain = state.lastView === 'question' || state.lastView === 'explanation'
 
   return (
     <div className="app">
@@ -100,8 +99,7 @@ function TrainerApp() {
       </div>
 
       <BottomTabs
-        hasQuestions={state.questions.length > 0}
-        hasVisibleExplanation={hasVisibleExplanation}
+        showExplain={showExplain}
         onExplain={actions.openExplanation}
         onReset={actions.resetToHome}
         onStats={actions.openStats}
@@ -111,4 +109,5 @@ function TrainerApp() {
 }
 
 export default TrainerApp
+
 
