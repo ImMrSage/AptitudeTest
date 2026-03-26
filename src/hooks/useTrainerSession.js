@@ -4,7 +4,6 @@ import {
   createInitialState,
   formatTime,
   generateSession,
-  getUniqueQuestionLimit,
   questionTemplateSignature,
   topicLabel,
 } from '../engine'
@@ -138,7 +137,7 @@ export function useTrainerSession() {
   function startSession() {
     activeTimedQuestionIdRef.current = null
     setState(prev => {
-      const count = Math.min(prev.count, getUniqueQuestionLimit(prev.topic))
+      const count = Math.max(1, Number(prev.count) || 1)
       const questions = generateSession(prev.topic, prev.difficulty, count, prev.mode, prev.lastQuestionTemplateSignature)
       return {
         ...prev,

@@ -128,14 +128,19 @@ export function matchAllNumbers(text) {
           }
           const avgMatch = q.prompt.match(/average to be (\d+)/);
           const nameMatch = q.prompt.match(/must (.+?) have/);
+          const scoreRows = [...q.visualHtml.matchAll(/([A-Za-z]+): (\d+) points/g)].map(match => ({ name: match[1], score: Number(match[2]) }));
           if (avgMatch && nameMatch) {
             const avg = Number(avgMatch[1]);
+            const targetName = nameMatch[1];
             const requiredTotal = avg * scores.length;
+            const otherScores = scoreRows.filter(row => row.name !== targetName).map(row => row.score);
+            const otherTotal = otherScores.reduce((a, b) => a + b, 0);
+            const missingScore = requiredTotal - otherTotal;
             return `
               <div class="formula-block">
-                <div class="formula-line">Required total = ${avg} Ã— ${scores.length} = ${requiredTotal}</div>
-                <div class="formula-line">Missing score = required total - known scores</div>
-                <div class="formula-line">Missing score = ${requiredTotal} - (${scores.join(' + ')} - ${nameMatch[1]})</div>
+                <div class="formula-line">Required total = ${avg} × ${scores.length} = ${requiredTotal}</div>
+                <div class="formula-line">Other scores = ${otherScores.join(' + ')} = ${otherTotal}</div>
+                <div class="formula-line">${targetName}'s score = ${requiredTotal} - ${otherTotal} = ${missingScore}</div>
               </div>
             `;
           }
@@ -173,6 +178,102 @@ export function matchAllNumbers(text) {
         }
       }
 
+
+        if (q.variantKey === 'quantitative-comparison') {
+          const aMatch = q.visualHtml.match(/Quantity A: (\d+) × (\d+)/);
+          const hardBMatch = q.visualHtml.match(/Quantity B: \((\d+) \+ (\d+)\) × \((\d+) \+ (\d+)\)/);
+          const simpleBMatch = q.visualHtml.match(/Quantity B: (\d+) × \((\d+) \+ 1\)/);
+          if (aMatch) {
+            const aLeft = Number(aMatch[1]);
+            const aRight = Number(aMatch[2]);
+            const valueA = aLeft * aRight;
+            let valueB = 0;
+            let formulaB = '';
+            if (hardBMatch) {
+              valueB = (Number(hardBMatch[1]) + Number(hardBMatch[2])) * (Number(hardBMatch[3]) + Number(hardBMatch[4]));
+              formulaB = `(${hardBMatch[1]} + ${hardBMatch[2]}) × (${hardBMatch[3]} + ${hardBMatch[4]})`;
+            } else if (simpleBMatch) {
+              valueB = Number(simpleBMatch[1]) * (Number(simpleBMatch[2]) + 1);
+              formulaB = `${simpleBMatch[1]} × (${simpleBMatch[2]} + 1)`;
+            }
+            return `
+              <div class="formula-block">
+                <div class="formula-line">Quantity A = ${aLeft} × ${aRight} = ${valueA}</div>
+                <div class="formula-line">Quantity B = ${formulaB} = ${valueB}</div>
+                <div class="formula-line">Compare ${valueA} and ${valueB} to choose the correct relation.</div>
+              </div>
+            `;
+          }
+        }
+
+        if (q.variantKey === 'quantitative-ratio') {
+          const ratioMatch = q.prompt.match(/ratio (\d+):(\d+)/);
+          const addMatch = q.prompt.match(/If (\d+) red counters are added/);
+          if (ratioMatch && addMatch) {
+            const blue = Number(ratioMatch[1]);
+            const red = Number(ratioMatch[2]);
+            const add = Number(addMatch[1]);
+            return `
+              <div class="formula-block">
+                <div class="formula-line">Blue stays the same = ${blue}</div>
+                <div class="formula-line">New red count = ${red} + ${add} = ${red + add}</div>
+                <div class="formula-line">New ratio blue:red = ${blue}:${red + add}</div>
+              </div>
+            `;
+          }
+        }
+
+        if (q.variantKey === 'quantitative-algebra') {
+          const equationMatch = q.visualHtml.match(/(\d+)x \+ (\d+) = (\d+)/);
+          if (equationMatch) {
+            const mult = Number(equationMatch[1]);
+            const add = Number(equationMatch[2]);
+            const total = Number(equationMatch[3]);
+            const reduced = total - add;
+            const x = reduced / mult;
+            return `
+              <div class="formula-block">
+                <div class="formula-line">${mult}x + ${add} = ${total}</div>
+                <div class="formula-line">${mult}x = ${total} - ${add} = ${reduced}</div>
+                <div class="formula-line">x = ${reduced} ÷ ${mult} = ${x}</div>
+              </div>
+            `;
+          }
+        }
+
+        if (q.variantKey === 'quantitative-table-total') {
+          const rowMatch = q.prompt.match(/row ([A-Z])/);
+          if (rowMatch) {
+            const row = rowMatch[1];
+            const valuesMatch = q.visualHtml.match(new RegExp(`Row ${row}: Period 1 = (\\d+), Period 2 = (\\d+)`));
+            if (valuesMatch) {
+              const period1 = Number(valuesMatch[1]);
+              const period2 = Number(valuesMatch[2]);
+              return `
+                <div class="formula-block">
+                  <div class="formula-line">Use row ${row} only.</div>
+                  <div class="formula-line">Total = ${period1} + ${period2} = ${period1 + period2}</div>
+                </div>
+              `;
+            }
+          }
+        }
+
+        if (q.variantKey === 'quantitative-percent-change') {
+          const promptMatch = q.prompt.match(/A value of (\d+) increases by (\d+)%/);
+          if (promptMatch) {
+            const start = Number(promptMatch[1]);
+            const pct = Number(promptMatch[2]);
+            const increase = start * pct / 100;
+            const end = start + increase;
+            return `
+              <div class="formula-block">
+                <div class="formula-line">Increase amount = ${start} × ${pct}/100 = ${increase}</div>
+                <div class="formula-line">New value = ${start} + ${increase} = ${end}</div>
+              </div>
+            `;
+          }
+        }
       if (q.topic === 'mechanical') {
         if (q.variantKey.includes('Gear A turns clockwise')) {
           return `
@@ -244,4 +345,5 @@ export function matchAllNumbers(text) {
 
       return '';
     }
+
 
