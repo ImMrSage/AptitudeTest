@@ -1,0 +1,314 @@
+import { useEffect, useMemo, useState } from 'react'
+import {
+  buildDetailedExplanationHtml,
+  createInitialState,
+  formatTime,
+  generateSession,
+  getUniqueQuestionLimit,
+  questionTemplateSignature,
+  topicLabel,
+} from '../engine'
+
+export function useTrainerSession() {
+  const [state, setState] = useState(() => createInitialState())
+
+  const currentIndex = state.reviewIndex ?? state.questionIndex
+  const currentQuestion = state.questions[currentIndex] || null
+  const currentAnswer = state.answers[currentIndex] || null
+  const inSession = state.questions.length > 0 || state.sessionDone
+  const progressPct = state.questions.length
+    ? (((state.reviewIndex != null ? state.reviewIndex + 1 : Math.min(state.questionIndex + (state.sessionDone ? 1 : 0), state.questions.length)) / state.questions.length) * 100)
+    : 0
+
+  useEffect(() => {
+    if (!currentQuestion || state.sessionDone || state.reviewIndex != null || state.mode === 'training' || state.showExplanation) {
+      return undefined
+    }
+
+    setState(prev => ({ ...prev, secondsLeft: currentQuestion.timer, startedAt: Date.now() }))
+
+    const id = window.setInterval(() => {
+      setState(prev => {
+        if (prev.sessionDone || prev.reviewIndex != null || prev.mode === 'training' || prev.showExplanation) {
+          window.clearInterval(id)
+          return prev
+        }
+
+        const nextSeconds = prev.secondsLeft - 1
+        if (nextSeconds > 0) {
+          return { ...prev, secondsLeft: nextSeconds }
+        }
+
+        window.clearInterval(id)
+        const q = prev.questions[prev.questionIndex]
+        if (!q) return prev
+
+        const nextAnswers = [...prev.answers]
+        nextAnswers[prev.questionIndex] = { answerIndex: -1, timedOut: true }
+        const nextStats = {
+          ...prev.stats,
+          totalQuestions: prev.stats.totalQuestions + 1,
+          byTopic: {
+            ...prev.stats.byTopic,
+            [q.topic]: {
+              ...prev.stats.byTopic[q.topic],
+              total: prev.stats.byTopic[q.topic].total + 1,
+            },
+          },
+        }
+
+        if (prev.mode === 'training' || prev.mode === 'drill') {
+          return { ...prev, answers: nextAnswers, stats: nextStats, showExplanation: true, lastView: 'explanation', secondsLeft: 0 }
+        }
+
+        if (prev.questionIndex >= prev.questions.length - 1) {
+          return {
+            ...prev,
+            answers: nextAnswers,
+            stats: { ...nextStats, totalSessions: nextStats.totalSessions + 1 },
+            secondsLeft: 0,
+            sessionDone: true,
+            lastView: 'summary',
+          }
+        }
+
+        return {
+          ...prev,
+          answers: nextAnswers,
+          stats: nextStats,
+          secondsLeft: prev.questions[prev.questionIndex + 1].timer,
+          questionIndex: prev.questionIndex + 1,
+          lastQuestionTemplateSignature: questionTemplateSignature(prev.questions[prev.questionIndex + 1]),
+        }
+      })
+    }, 1000)
+
+    return () => window.clearInterval(id)
+  }, [currentQuestion, state.mode, state.reviewIndex, state.sessionDone, state.showExplanation])
+
+  const timerText = !inSession || state.mode === 'training'
+    ? '--:--'
+    : state.showExplanation && currentAnswer?.timedOut
+      ? '00:00'
+      : formatTime(state.secondsLeft)
+
+  const detailedExplanationHtml = useMemo(
+    () => (currentQuestion ? buildDetailedExplanationHtml(currentQuestion) || currentQuestion.explanation : ''),
+    [currentQuestion],
+  )
+
+  const summaryScore = state.answers.filter((answer, index) => answer && answer.answerIndex === state.questions[index].correctIndex).length
+  const summaryAccuracy = state.answers.length ? Math.round((summaryScore / state.answers.length) * 100) : 0
+
+  let weakTopic = 'No data yet'
+  let worstPct = Infinity
+  for (const [topic, stats] of Object.entries(state.stats.byTopic)) {
+    if (stats.total === 0) continue
+    const pct = stats.correct / stats.total
+    if (pct < worstPct) {
+      worstPct = pct
+      weakTopic = topicLabel(topic)
+    }
+  }
+
+  function startSession() {
+    setState(prev => {
+      const count = Math.min(prev.count, getUniqueQuestionLimit(prev.topic))
+      const questions = generateSession(prev.topic, prev.difficulty, count, prev.mode, prev.lastQuestionTemplateSignature)
+      return {
+        ...prev,
+        count,
+        questions,
+        answers: new Array(questions.length).fill(null),
+        questionIndex: 0,
+        reviewIndex: null,
+        showExplanation: false,
+        sessionDone: false,
+        lastView: 'question',
+        lastQuestionTemplateSignature: questions[0] ? questionTemplateSignature(questions[0]) : prev.lastQuestionTemplateSignature,
+        secondsLeft: questions[0]?.timer || 0,
+        startedAt: Date.now(),
+      }
+    })
+  }
+
+  function saveAnswer(answerIndex, timedOut = false) {
+    setState(prev => {
+      const idx = prev.questionIndex
+      const q = prev.questions[idx]
+      if (!q || prev.answers[idx] !== null) return prev
+
+      const nextAnswers = [...prev.answers]
+      nextAnswers[idx] = { answerIndex, timedOut: !!timedOut }
+      const nextStats = {
+        ...prev.stats,
+        totalQuestions: prev.stats.totalQuestions + 1,
+        correct: prev.stats.correct + (answerIndex === q.correctIndex ? 1 : 0),
+        byTopic: {
+          ...prev.stats.byTopic,
+          [q.topic]: {
+            total: prev.stats.byTopic[q.topic].total + 1,
+            correct: prev.stats.byTopic[q.topic].correct + (answerIndex === q.correctIndex ? 1 : 0),
+          },
+        },
+      }
+
+      return { ...prev, answers: nextAnswers, stats: nextStats }
+    })
+  }
+
+  function nextQuestion(skipExplanation = false) {
+    setState(prev => {
+      const nextIndex = prev.questionIndex + 1
+      if (prev.questionIndex >= prev.questions.length - 1) {
+        return {
+          ...prev,
+          showExplanation: false,
+          reviewIndex: null,
+          sessionDone: true,
+          lastView: 'summary',
+          stats: { ...prev.stats, totalSessions: prev.stats.totalSessions + 1 },
+        }
+      }
+
+      return {
+        ...prev,
+        questionIndex: nextIndex,
+        showExplanation: false,
+        reviewIndex: null,
+        lastView: skipExplanation ? 'question' : prev.lastView,
+        secondsLeft: prev.questions[nextIndex]?.timer || 0,
+        startedAt: Date.now(),
+        lastQuestionTemplateSignature: prev.questions[nextIndex] ? questionTemplateSignature(prev.questions[nextIndex]) : prev.lastQuestionTemplateSignature,
+      }
+    })
+  }
+
+  function resetToHome() {
+    setState(prev => ({
+      ...prev,
+      questions: [],
+      answers: [],
+      questionIndex: 0,
+      reviewIndex: null,
+      showExplanation: false,
+      sessionDone: false,
+      lastView: 'home',
+      secondsLeft: 0,
+    }))
+  }
+
+  function goBack() {
+    setState(prev => {
+      if (prev.lastView === 'home') return prev
+      if (prev.lastView === 'stats') {
+        if (prev.sessionDone) return { ...prev, lastView: 'summary' }
+        if (prev.questions.length > 0) return { ...prev, lastView: 'question', reviewIndex: null, showExplanation: false }
+        return { ...prev, lastView: 'home' }
+      }
+      if (prev.lastView === 'summary') {
+        return {
+          ...prev,
+          questions: [],
+          answers: [],
+          questionIndex: 0,
+          reviewIndex: null,
+          showExplanation: false,
+          sessionDone: false,
+          lastView: 'home',
+          secondsLeft: 0,
+        }
+      }
+      if (prev.lastView === 'explanation') {
+        if (prev.reviewIndex != null) return { ...prev, reviewIndex: null, lastView: 'summary' }
+        return { ...prev, showExplanation: false, lastView: 'question' }
+      }
+      if (prev.lastView === 'question') {
+        return {
+          ...prev,
+          questions: [],
+          answers: [],
+          questionIndex: 0,
+          reviewIndex: null,
+          showExplanation: false,
+          sessionDone: false,
+          lastView: 'home',
+          secondsLeft: 0,
+        }
+      }
+      return prev
+    })
+  }
+
+  function handleAnswer(answerIndex) {
+    if (state.reviewIndex != null || state.answers[state.questionIndex] !== null) return
+    saveAnswer(answerIndex, false)
+    if (state.mode === 'training' || state.mode === 'drill') {
+      setState(prev => ({ ...prev, showExplanation: true, lastView: 'explanation' }))
+      return
+    }
+    nextQuestion(true)
+  }
+
+  function skipQuestion() {
+    if (state.sessionDone || !state.questions.length || state.showExplanation || state.reviewIndex != null) return
+    saveAnswer(-1, true)
+    if (state.mode === 'training' || state.mode === 'drill') {
+      setState(prev => ({ ...prev, showExplanation: true, lastView: 'explanation' }))
+      return
+    }
+    nextQuestion(true)
+  }
+
+  function openExplanation() {
+    if (!state.questions.length) return
+    const hasAnswer = state.answers[state.questionIndex] !== null
+    if (state.showExplanation || state.reviewIndex != null || hasAnswer) {
+      setState(prev => ({ ...prev, lastView: 'explanation', showExplanation: true }))
+    }
+  }
+
+  function openStats() {
+    setState(prev => ({ ...prev, lastView: 'stats' }))
+  }
+
+  function openReviewItem(index) {
+    setState(prev => ({ ...prev, reviewIndex: index, lastView: 'explanation' }))
+  }
+
+  function closeReview() {
+    setState(prev => ({ ...prev, reviewIndex: null, lastView: 'summary' }))
+  }
+
+  function updateSetupField(field, value) {
+    setState(prev => ({ ...prev, [field]: value }))
+  }
+
+  return {
+    state,
+    currentIndex,
+    currentQuestion,
+    currentAnswer,
+    inSession,
+    progressPct,
+    timerText,
+    detailedExplanationHtml,
+    summaryScore,
+    summaryAccuracy,
+    weakTopic,
+    actions: {
+      goBack,
+      handleAnswer,
+      nextQuestion,
+      openExplanation,
+      openReviewItem,
+      closeReview,
+      openStats,
+      resetToHome,
+      skipQuestion,
+      startSession,
+      updateSetupField,
+    },
+  }
+}
+
