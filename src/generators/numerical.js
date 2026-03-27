@@ -75,6 +75,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-bar-profit',
         variantKey: 'numerical-bar-profit',
         timer: getTimerSeconds('numerical', difficulty),
         prompt: 'In January, who had enough sales to earn their own wages?',
@@ -214,6 +215,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-pie-growth',
         variantKey,
         timer: getTimerSeconds('numerical', difficulty),
         prompt,
@@ -254,6 +256,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-loan-fine',
         variantKey: 'numerical-loan-fine',
         timer: getTimerSeconds('numerical', difficulty),
         prompt: `1 in ${ratioA} loans exceeded the loan period and resulted in a fine of $${fine}. How much money did the library make on fines?`,
@@ -362,6 +365,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-factory-output',
         variantKey,
         timer: getTimerSeconds('numerical', difficulty),
         prompt,
@@ -400,6 +404,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-discount-table',
         variantKey: 'numerical-discount-table',
         timer: getTimerSeconds('numerical', difficulty),
         prompt: `What is the discounted total price for ${qty} units of ${products[idx]}?`,
@@ -434,6 +439,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-averages',
         variantKey: askForNeeded ? 'numerical-averages-missing' : 'numerical-averages-mean',
         timer: getTimerSeconds('numerical', difficulty),
         prompt: askForNeeded
@@ -473,6 +479,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-time-work',
         variantKey: 'numerical-time-work',
         timer: getTimerSeconds('numerical', difficulty),
         prompt: 'How long would they take working together?',
@@ -507,6 +514,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-table-comparison',
         variantKey: askType === 'diff' ? 'numerical-table-diff' : 'numerical-table-winner',
         timer: getTimerSeconds('numerical', difficulty),
         prompt: askType === 'diff'

@@ -104,6 +104,10 @@ export function topicLabel(k) {
       return `${q.topic}|${q.variantKey || q.prompt}`;
     }
 
+    export function questionFamilySignature(q) {
+      return `${q.topic}|${q.familyKey || q.variantKey || q.prompt}`;
+    }
+
     export function questionSignature(q) {
       const optionsSig = (q.options || []).map(opt => opt.plain || opt.text || opt.html || '').join('||');
       return `${questionTemplateSignature(q)}|${q.prompt}|${q.visualHtml || ''}|${optionsSig}`;
