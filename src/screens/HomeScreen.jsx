@@ -5,7 +5,7 @@ export default function HomeScreen({ count, difficulty, mode, topic, onChangeFie
     <div className="setup-grid">
       <div className="setup-card">
         <div style={{ fontSize: 26, fontWeight: 800 }}>Assessment Trainer v1</div>
-        <div className="small mt8">One question at a time. Real timer. Generated questions. English tasks + RU explanations.</div>
+
         <div className="mt12">
           {TOPICS.filter(item => item.value !== 'mixed').map(item => <span key={item.value} className="pill">{item.label}</span>)}
         </div>
@@ -58,3 +58,4 @@ export default function HomeScreen({ count, difficulty, mode, topic, onChangeFie
     </div>
   )
 }
+

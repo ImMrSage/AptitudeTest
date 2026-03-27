@@ -13,6 +13,7 @@ export function generateSession(topic, difficulty, count, mode, lastQuestionTemp
     : [topic]
   let previousTemplateSignature = lastQuestionTemplateSignature
   const usedSignatures = new Set()
+  const usedTemplateSignatures = new Set()
 
   for (let i = 0; i < count; i++) {
     const selectedTopic = topic === 'mixed' ? pool[i % pool.length] : pool[0]
@@ -20,7 +21,11 @@ export function generateSession(topic, difficulty, count, mode, lastQuestionTemp
     let signature = questionSignature(question)
     let templateSignature = questionTemplateSignature(question)
 
-    for (let attempt = 0; attempt < 24 && (usedSignatures.has(signature) || templateSignature === previousTemplateSignature); attempt++) {
+    for (let attempt = 0; attempt < 48 && (
+      usedSignatures.has(signature) ||
+      templateSignature === previousTemplateSignature ||
+      usedTemplateSignatures.has(templateSignature)
+    ); attempt++) {
       question = generateQuestion(selectedTopic, difficulty, mode)
       signature = questionSignature(question)
       templateSignature = questionTemplateSignature(question)
@@ -28,6 +33,7 @@ export function generateSession(topic, difficulty, count, mode, lastQuestionTemp
 
     previousTemplateSignature = templateSignature
     usedSignatures.add(signature)
+    usedTemplateSignatures.add(templateSignature)
     list.push({ ...question, id: `${question.topic}-${Date.now()}-${i}` })
   }
 
@@ -60,3 +66,4 @@ export {
   generateVerbal,
   pieSvg,
 }
+

@@ -19,10 +19,10 @@ export function pieSvg(cx, cy, r, percentages, colors) {
 
     export function generateNumerical(difficulty) {
       const types = difficulty === 'easy'
-        ? ['bar-profit', 'pie-growth', 'factory-output', 'averages', 'assessmentday']
+        ? ['bar-profit', 'pie-growth', 'factory-output', 'averages', 'discount-table', 'assessmentday', 'assessmentday']
         : difficulty === 'medium'
-        ? ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'assessmentday']
-        : ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'assessmentday'];
+        ? ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'assessmentday', 'assessmentday', 'assessmentday']
+        : ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'assessmentday', 'assessmentday', 'assessmentday'];
       const type = pick(types);
       if (type === 'bar-profit') return numericalBarProfit(difficulty);
       if (type === 'loan-fine') return numericalLoanFine(difficulty);
@@ -87,31 +87,115 @@ export function pieSvg(cx, cy, r, percentages, colors) {
     }
 
     export function numericalPieGrowth(difficulty) {
-      const total = pick([80, 85, 90, 100]);
+      const total = pick([80, 84, 90, 96, 100, 120]);
       const regions = ['Asia', 'N. America', 'S. America', 'Europe', 'Other'];
-      let perc;
-      if (difficulty === 'easy') {
-        perc = [25, 10, 40, 20, 5];
-      } else if (difficulty === 'medium') {
-        perc = [26, 6, 49, 17, 2];
+      const percentageTemplates = [
+        [25, 20, 18, 22, 15],
+        [30, 25, 20, 15, 10],
+        [28, 21, 19, 17, 15],
+        [32, 24, 18, 16, 10],
+        [26, 23, 20, 17, 14]
+      ];
+      const perc = shuffle([...pick(percentageTemplates)]);
+      const regionIndex = randInt(0, regions.length - 1);
+      const region = regions[regionIndex];
+      const regionPct = perc[regionIndex];
+      const growth = difficulty === 'easy' ? pick([12, 15, 20, 25]) : pick([15, 18, 20, 25, 30, 35, 40]);
+      const base = round1(total * regionPct / 100);
+      const result = round1(base * (1 + growth / 100));
+      const increase = round1(result - base);
+      const askType = difficulty === 'easy'
+        ? pick(['future-sales', 'base-sales'])
+        : pick(['future-sales', 'base-sales', 'increase-amount', 'largest-increase']);
+      const colors = ['#2563eb', '#dc2626', '#65a30d', '#7c3aed', '#0891b2'];
+      const legend = regions.map((name, i) => `<div class="legend-item"><span class="swatch" style="background:${colors[i]}"></span>${name}: ${perc[i]}%</div>`).join('');
+
+      let prompt = '';
+      let optionValues = [];
+      let optionTexts = [];
+      let correctValue = null;
+      let correctText = '';
+      let explanationHtml = '';
+      let variantKey = '';
+      let extraHtml = '';
+
+      if (askType === 'future-sales') {
+        prompt = `Compared to 2020, the company increased C-BEER sales in ${region} by ${growth}% in 2021. Approximately how many million bottles were sold there in 2021?`;
+        correctValue = result;
+        optionValues = uniqueRoundedValues([
+          result,
+          base,
+          increase,
+          round1(base * (1 + Math.max(5, growth - 5) / 100)),
+          round1(result + pick([1.2, 1.8, 2.4, 3.1]))
+        ], 1);
+        optionTexts = optionValues.map(v => `${v.toFixed(1)} million`);
+        correctText = `${correctValue.toFixed(1)} million`;
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">2020 ${region} sales = ${total} x ${regionPct}% = ${base.toFixed(1)} million</div>
+            <div class="formula-line">2021 ${region} sales = ${base.toFixed(1)} x (1 + ${growth}/100)</div>
+            <div class="formula-line">2021 ${region} sales = ${base.toFixed(1)} x ${(1 + growth / 100).toFixed(2)} = ${result.toFixed(1)} million</div>
+          </div>
+        `;
+        variantKey = 'numerical-pie-growth-future';
+      } else if (askType === 'base-sales') {
+        prompt = `In 2020, approximately how many million bottles of C-BEER were sold in ${region}?`;
+        correctValue = base;
+        optionValues = uniqueRoundedValues([
+          base,
+          result,
+          increase,
+          round1(total * pick([15, 18, 20, 22, 25]) / 100),
+          round1(base + pick([2.0, 3.0, 4.0]))
+        ], 1);
+        optionTexts = optionValues.map(v => `${v.toFixed(1)} million`);
+        correctText = `${correctValue.toFixed(1)} million`;
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">${region} share in 2020 = ${regionPct}%</div>
+            <div class="formula-line">Sales in ${region} = ${total} x ${regionPct}%</div>
+            <div class="formula-line">Sales in ${region} = ${total} x ${(regionPct / 100).toFixed(2)} = ${base.toFixed(1)} million</div>
+          </div>
+        `;
+        variantKey = 'numerical-pie-growth-base';
+      } else if (askType === 'increase-amount') {
+        prompt = `Compared to 2020, the company increased C-BEER sales in ${region} by ${growth}% in 2021. By approximately how many million bottles did sales in ${region} increase?`;
+        correctValue = increase;
+        optionValues = uniqueRoundedValues([
+          increase,
+          result,
+          base,
+          round1(base * Math.max(10, growth - 5) / 100),
+          round1(increase + pick([0.8, 1.1, 1.6]))
+        ], 1);
+        optionTexts = optionValues.map(v => `${v.toFixed(1)} million`);
+        correctText = `${correctValue.toFixed(1)} million`;
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">2020 ${region} sales = ${total} x ${regionPct}% = ${base.toFixed(1)} million</div>
+            <div class="formula-line">Increase = ${base.toFixed(1)} x ${growth}/100 = ${increase.toFixed(1)} million</div>
+          </div>
+        `;
+        variantKey = 'numerical-pie-growth-increase';
       } else {
-        perc = [28, 7, 43, 16, 6];
+        const growthRates = regions.map(() => pick([10, 12, 15, 18, 20, 25, 30, 35]));
+        const futureByRegion = regions.map((_, i) => round1(total * perc[i] / 100 * (1 + growthRates[i] / 100)));
+        const increaseByRegion = futureByRegion.map((future, i) => round1(future - total * perc[i] / 100));
+        const winnerIndex = increaseByRegion.indexOf(Math.max(...increaseByRegion));
+        correctText = regions[winnerIndex];
+        prompt = 'Each region grows by the rate shown below from 2020 to 2021. Which region has the largest increase in the number of bottles sold?';
+        optionTexts = [...regions];
+        explanationHtml = `
+          <div class="formula-block">
+            ${regions.map((name, i) => `<div class="formula-line">${name}: ${total} x ${perc[i]}% = ${(total * perc[i] / 100).toFixed(1)} million; increase = ${(total * perc[i] / 100).toFixed(1)} x ${growthRates[i]}/100 = ${increaseByRegion[i].toFixed(1)} million</div>`).join('')}
+            <div class="formula-line">Largest increase = ${regions[winnerIndex]}</div>
+          </div>
+        `;
+        variantKey = 'numerical-pie-growth-largest-increase';
+        extraHtml = `<div class="statement">2021 growth rates: ${regions.map((name, i) => `${name} +${growthRates[i]}%`).join(' | ')}</div>`;
       }
-      const region = pick(['Asia', 'Europe', 'S. America']);
-      const regionPct = perc[regions.indexOf(region)];
-      const growth = difficulty === 'easy' ? pick([20, 25]) : pick([25, 30, 35]);
-      const base = total * regionPct / 100;
-      const result = base * (1 + growth / 100);
-      const rounded = Math.round(result * 10) / 10;
-      const distractors = shuffle([
-        rounded,
-        Math.round(base * 10) / 10,
-        Math.round((base + growth) * 10) / 10,
-        Math.round((base * growth / 100) * 10) / 10
-      ].filter((v, i, a) => a.indexOf(v) === i)).slice(0, 4);
-      const correctIndex = distractors.indexOf(rounded);
-      const colors = ['#2563eb','#dc2626','#65a30d','#7c3aed','#0891b2'];
-      const legend = regions.map((r, i) => `<div class="legend-item"><span class="swatch" style="background:${colors[i]}"></span>${r}: ${perc[i]}%</div>`).join('');
+
       const visualHtml = `
         <div class="chart">
           <div class="center"><strong>C-BEER sales in 2020</strong></div>
@@ -120,19 +204,25 @@ export function pieSvg(cx, cy, r, percentages, colors) {
             ${pieSvg(110, 110, 80, perc, colors)}
           </svg>
           <div class="pie-legend">${legend}</div>
+          ${extraHtml}
         </div>
       `;
+
+      const options = shuffle(optionTexts).slice(0, 5);
+      const correctIndex = options.indexOf(correctText);
+
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
-        variantKey: 'numerical-pie-growth',
+        variantKey,
         timer: getTimerSeconds('numerical', difficulty),
-        prompt: `Compared to 2020, the company increased C-BEER sales in ${region} by ${growth}% in 2021. Approximately how many million bottles were sold there in 2021?`,
+        prompt,
         visualHtml,
-        options: distractors.map(v => ({ text: `${v} million`, plain: `${v} million` })),
+        options: options.map(text => ({ text, plain: text })),
         correctIndex,
-        explanation: `Сначала нужен только один сектор: ${region} = ${regionPct}% от ${total} million. Потом increase на ${growth}% считается от этой базы, не от total. Значит: ${total} × ${regionPct}% = ${base.toFixed(1)}; затем × 1.${String(growth).padStart(2,'0')} = ${rounded.toFixed(1)}.`,
-        pattern: `For percentage growth: first find the part, then multiply by (1 + growth%). Do not add the percent number directly.`
+        explanation: 'Use the regional share first, then decide whether the question wants the 2020 base, the increase, or the 2021 total.',
+        explanationHtml,
+        pattern: 'First isolate the region from the pie chart. After that, apply the percentage change only to that region.'
       };
     }
 
@@ -176,20 +266,89 @@ export function pieSvg(cx, cy, r, percentages, colors) {
     }
 
     export function numericalFactoryOutput(difficulty) {
-      const lines = ['Line A', 'Line B', 'Line C', 'Line D'];
-      const units = lines.map(() => randInt(120, 260));
-      const defectRates = difficulty === 'easy'
-        ? lines.map(() => pick([2, 3, 4, 5]))
-        : lines.map(() => pick([3, 4, 5, 6, 7]));
-      const idx = randInt(0, lines.length - 1);
-      const goodUnits = Math.round(units[idx] * (1 - defectRates[idx] / 100));
-      const options = shuffle([
-        goodUnits,
-        units[idx],
-        Math.round(units[idx] * defectRates[idx] / 100),
-        Math.round(units[idx] * (1 - (defectRates[idx] + 2) / 100))
-      ].filter((v, i, a) => a.indexOf(v) === i)).slice(0, 4);
-      const correctIndex = options.indexOf(goodUnits);
+      const allLines = ['Line A', 'Line B', 'Line C', 'Line D', 'Line E'];
+      const lineCount = difficulty === 'easy' ? 4 : pick([4, 5]);
+      const lines = allLines.slice(0, lineCount);
+      const units = lines.map(() => randInt(120, difficulty === 'hard' ? 340 : 280));
+      const defectPool = difficulty === 'easy'
+        ? [2, 3, 4, 5, 6, 7]
+        : [2, 3, 4, 5, 6, 7, 8, 9];
+      const defectRates = shuffle([...defectPool]).slice(0, lineCount);
+      const targetIndex = randInt(0, lines.length - 1);
+      const defectCounts = lines.map((_, i) => Math.round(units[i] * defectRates[i] / 100));
+      const goodUnits = lines.map((_, i) => units[i] - defectCounts[i]);
+      const askType = difficulty === 'easy'
+        ? pick(['good-units', 'defective-units'])
+        : pick(['good-units', 'defective-units', 'highest-good', 'highest-defects']);
+
+      let prompt = '';
+      let optionTexts = [];
+      let correctText = '';
+      let explanationHtml = '';
+      let variantKey = '';
+
+      if (askType === 'good-units') {
+        prompt = `How many non-defective units did ${lines[targetIndex]} produce?`;
+        const correctValue = goodUnits[targetIndex];
+        optionTexts = uniqueRoundedValues([
+          correctValue,
+          units[targetIndex],
+          defectCounts[targetIndex],
+          goodUnits[targetIndex] + pick([4, 6, 8]),
+          Math.max(1, goodUnits[targetIndex] - pick([3, 5, 7]))
+        ], 0).map(v => `${v} units`);
+        correctText = `${correctValue} units`;
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Defective units for ${lines[targetIndex]} = ${units[targetIndex]} x ${defectRates[targetIndex]}% = ${defectCounts[targetIndex]}</div>
+            <div class="formula-line">Non-defective units = ${units[targetIndex]} - ${defectCounts[targetIndex]} = ${correctValue}</div>
+          </div>
+        `;
+        variantKey = 'numerical-factory-good';
+      } else if (askType === 'defective-units') {
+        prompt = `How many defective units did ${lines[targetIndex]} produce?`;
+        const correctValue = defectCounts[targetIndex];
+        optionTexts = uniqueRoundedValues([
+          correctValue,
+          goodUnits[targetIndex],
+          units[targetIndex],
+          defectCounts[targetIndex] + pick([2, 4, 5]),
+          Math.max(1, defectCounts[targetIndex] - pick([1, 2, 3]))
+        ], 0).map(v => `${v} units`);
+        correctText = `${correctValue} units`;
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Defective units = ${units[targetIndex]} x ${defectRates[targetIndex]}%</div>
+            <div class="formula-line">Defective units = ${units[targetIndex]} x ${(defectRates[targetIndex] / 100).toFixed(2)} = ${correctValue}</div>
+          </div>
+        `;
+        variantKey = 'numerical-factory-defective';
+      } else if (askType === 'highest-good') {
+        const winnerIndex = goodUnits.indexOf(Math.max(...goodUnits));
+        prompt = 'Which line produced the greatest number of non-defective units?';
+        optionTexts = [...lines];
+        correctText = lines[winnerIndex];
+        explanationHtml = `
+          <div class="formula-block">
+            ${lines.map((line, i) => `<div class="formula-line">${line}: ${units[i]} - ${defectCounts[i]} = ${goodUnits[i]} non-defective units</div>`).join('')}
+            <div class="formula-line">Highest non-defective output = ${lines[winnerIndex]}</div>
+          </div>
+        `;
+        variantKey = 'numerical-factory-highest-good';
+      } else {
+        const winnerIndex = defectCounts.indexOf(Math.max(...defectCounts));
+        prompt = 'Which line lost the greatest number of units to defects?';
+        optionTexts = [...lines];
+        correctText = lines[winnerIndex];
+        explanationHtml = `
+          <div class="formula-block">
+            ${lines.map((line, i) => `<div class="formula-line">${line}: ${units[i]} x ${defectRates[i]}% = ${defectCounts[i]} defective units</div>`).join('')}
+            <div class="formula-line">Greatest defect count = ${lines[winnerIndex]}</div>
+          </div>
+        `;
+        variantKey = 'numerical-factory-highest-defects';
+      }
+
       const visualHtml = `
         <div class="chart">
           <div class="center"><strong>Weekly production report</strong></div>
@@ -198,17 +357,20 @@ export function pieSvg(cx, cy, r, percentages, colors) {
           </div>
         </div>
       `;
+      const options = shuffle(optionTexts).slice(0, 5);
+      const correctIndex = options.indexOf(correctText);
       return {
         topic: 'numerical',
         topicLabel: 'Numerical reasoning',
-        variantKey: 'numerical-factory-output',
+        variantKey,
         timer: getTimerSeconds('numerical', difficulty),
-        prompt: `How many non-defective units did ${lines[idx]} produce?`,
+        prompt,
         visualHtml,
-        options: options.map(v => ({ text: `${v} units`, plain: `${v} units` })),
+        options: options.map(text => ({ text, plain: text })),
         correctIndex,
-        explanation: `Take total output for ${lines[idx]} and remove the defective percentage. Good units = ${units[idx]} × (100% - ${defectRates[idx]}%) = ${goodUnits}.`,
-        pattern: `For defect questions, compute the usable remainder, not the defective part.`
+        explanation: 'For production defects, first decide whether the question wants the defective part, the usable remainder, or a comparison across all lines.',
+        explanationHtml,
+        pattern: 'Convert the defect percentage into a unit count before comparing or subtracting.'
       };
     }
 
@@ -255,7 +417,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
       const idx = randInt(0, names.length - 1);
       const needed = avg * scores.length - (scores.reduce((a, b) => a + b, 0) - scores[idx]);
-      const askForNeeded = difficulty === 'hard';
+      const askForNeeded = difficulty !== 'easy' && pick([true, false]);
       const options = askForNeeded
         ? shuffle([needed, needed + 2, needed - 3, avg].filter((v, i, a) => a.indexOf(v) === i))
         : shuffle([avg, avg + 2, Math.max(1, avg - 3), scores[idx]].filter((v, i, a) => a.indexOf(v) === i));
@@ -360,7 +522,27 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       };
     }
 
+    function round1(value) {
+      return Math.round(value * 10) / 10;
+    }
+    function uniqueRoundedValues(values, decimals = 0) {
+      const scale = decimals === 0 ? 1 : Math.pow(10, decimals);
+      const result = [];
+      values.forEach(value => {
+        const normalized = decimals === 0
+          ? Math.round(value)
+          : Math.round(value * scale) / scale;
+        if (!result.includes(normalized)) result.push(normalized);
+      });
+      return result;
+    }
+
     export function askWholeNumber(value) {
       return Math.abs(value - Math.round(value)) < 0.001;
     }
+
+
+
+
+
 

@@ -1,11 +1,9 @@
-import { getTimerSeconds, pick, randInt } from '../engine-core'
+import { getTimerSeconds, pick, randInt, shuffle } from '../engine-core'
 
 export function generateAssessmentDayNumerical(difficulty) {
   const families = difficulty === 'easy'
-    ? ['share-index', 'eastern-sales']
-    : difficulty === 'medium'
-      ? ['share-index', 'car-data', 'eastern-sales']
-      : ['share-index', 'car-data', 'legal-it', 'sales-turnover', 'stacked-profits', 'eastern-sales']
+    ? ['share-index', 'car-data', 'eastern-sales']
+    : ['share-index', 'car-data', 'legal-it', 'sales-turnover', 'stacked-profits', 'eastern-sales']
 
   const family = pick(families)
   if (family === 'share-index') return numericalShareIndexes(difficulty)
@@ -497,3 +495,6 @@ function round2(value) {
 function sum(values) {
   return values.reduce((acc, value) => acc + value, 0)
 }
+
+
+
