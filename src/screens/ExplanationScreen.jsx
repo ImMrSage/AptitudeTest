@@ -1,6 +1,14 @@
-import { renderHtml } from '../utils/renderHtml'
+import { decodeHtmlText, renderHtml } from '../utils/renderHtml'
+
+function getAnswerLabel(option) {
+  if (!option) return 'Unavailable'
+  return decodeHtmlText(option.plain || option.text || '')
+}
 
 export default function ExplanationScreen({ answer, explanationHtml, isReview, isLastQuestion, onContinue, onMainMenu, question }) {
+  const correctOption = question.options[question.correctIndex] || null
+  const selectedOption = answer && answer.answerIndex >= 0 ? (question.options[answer.answerIndex] || null) : null
+
   return (
     <div className="setup-grid">
       <div className="card">
@@ -29,9 +37,9 @@ export default function ExplanationScreen({ answer, explanationHtml, isReview, i
             })}
           </div>
           <div className="mt12" />
-          <div><strong>Correct answer:</strong> {question.options[question.correctIndex].plain}</div>
-          {answer && answer.answerIndex >= 0
-            ? <div className="mt8"><strong>Your answer:</strong> {question.options[answer.answerIndex].plain}</div>
+          <div><strong>Correct answer:</strong> {getAnswerLabel(correctOption)}</div>
+          {selectedOption
+            ? <div className="mt8"><strong>Your answer:</strong> {getAnswerLabel(selectedOption)}</div>
             : answer?.timedOut
               ? <div className="mt8"><strong>Your answer:</strong> Time out</div>
               : <div className="mt8"><strong>Your answer:</strong> Not answered yet</div>}

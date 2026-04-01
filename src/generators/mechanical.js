@@ -5,10 +5,22 @@ const DIRECTIONS = ['Clockwise', 'Counterclockwise']
 export function generateMechanical(difficulty) {
   const families = [
     'gear',
+    'gear-loop',
+    'gear-loop',
+    'bar-lock',
+    'bar-lock',
     'ramp',
     'lever',
     'pulley',
+    'belt-shaft-speed',
+    'belt-shaft-speed',
     'thermal',
+    'rope-slip',
+    'rope-slip',
+    'bulb-circuit',
+    'bulb-circuit',
+    'bulb-count',
+    'bulb-count',
     'buoyancy-tank',
     'bridge-deflection',
     'convex-mirror',
@@ -22,10 +34,16 @@ export function generateMechanical(difficulty) {
   ]
   const family = pick(families)
   if (family === 'gear') return mechanicalGear(difficulty)
+  if (family === 'gear-loop') return mechanicalGearLoop(difficulty)
+  if (family === 'bar-lock') return mechanicalBarLock(difficulty)
   if (family === 'ramp') return mechanicalRamp(difficulty)
   if (family === 'lever') return mechanicalLever(difficulty)
   if (family === 'pulley') return mechanicalPulley(difficulty)
+  if (family === 'belt-shaft-speed') return mechanicalBeltShaftSpeed(difficulty)
   if (family === 'thermal') return mechanicalThermal(difficulty)
+  if (family === 'rope-slip') return mechanicalRopeSlip(difficulty)
+  if (family === 'bulb-circuit') return mechanicalBulbCircuit(difficulty)
+  if (family === 'bulb-count') return mechanicalBulbCount(difficulty)
   if (family === 'buoyancy-tank') return mechanicalBuoyancyTank(difficulty)
   if (family === 'bridge-deflection') return mechanicalBridgeDeflection(difficulty)
   if (family === 'convex-mirror') return mechanicalConvexMirror(difficulty)
@@ -176,7 +194,7 @@ function mechanicalLever(difficulty) {
     explanation: 'A longer effort arm produces a larger moment, so less force is needed to move the load.',
     explanationHtml: `
       <div class="formula-block">
-        <div class="formula-line">Moment = force � distance from the pivot</div>
+        <div class="formula-line">Moment = force ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â distance from the pivot</div>
         <div class="formula-line">Load arm = ${loadArm} units</div>
         <div class="formula-line">Effort arm = ${effortArm} units</div>
         <div class="formula-line">Because the effort arm is longer than the load arm, the lever gives mechanical advantage.</div>
@@ -234,7 +252,6 @@ function mechanicalPulley(difficulty) {
     pattern: 'In pulley questions, compare the number of rope segments supporting the load.'
   }
 }
-
 function mechanicalThermal(difficulty) {
   const object = pick(['metal rod', 'steel bar', 'metal rail'])
   const action = pick(['heated', 'cooled'])
@@ -636,7 +653,7 @@ function mechanicalBoltCutter(difficulty) {
     explanation: 'Long handles increase the distance from the pivot, so the user creates a larger moment and gets greater cutting force at the jaws.',
     explanationHtml: `
       <div class="formula-block">
-        <div class="formula-line">Moment = force � distance from the pivot.</div>
+        <div class="formula-line">Moment = force ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â distance from the pivot.</div>
         <div class="formula-line">Longer handles increase that distance.</div>
         <div class="formula-line">A larger moment at the handles produces a larger cutting force at the jaws.</div>
         <div class="formula-line">That is mechanical advantage.</div>
@@ -737,7 +754,7 @@ function mechanicalHalligan(difficulty) {
     explanation: 'The longest handle gives the greatest lever arm, so it needs the least force to produce the same turning moment on the door.',
     explanationHtml: `
       <div class="formula-block">
-        <div class="formula-line">Moment = force � lever arm.</div>
+        <div class="formula-line">Moment = force ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â lever arm.</div>
         <div class="formula-line">A longer halligan handle means a longer lever arm.</div>
         <div class="formula-line">For the same required turning moment, a longer lever arm needs less input force.</div>
         <div class="formula-line">So tool D requires the least effort.</div>
@@ -747,6 +764,517 @@ function mechanicalHalligan(difficulty) {
   }
 }
 
+
+function mechanicalGearLoop(difficulty) {
+  const gearCount = pick(difficulty === 'hard' ? [6, 7, 8] : [6, 7])
+  const labels = Array.from({ length: gearCount }, (_, index) => index + 1)
+  const sameDirection = labels.filter(label => label !== 1 && label % 2 === 1)
+  const oppositeDirectionGears = labels.filter(label => label % 2 === 0)
+  const positions = labels.map((label, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI * 2) / gearCount
+    return {
+      label,
+      x: 205 + 88 * Math.cos(angle),
+      y: 112 + 82 * Math.sin(angle),
+      r: label === 3 ? 30 : label % 2 === 0 ? 20 : 22,
+    }
+  })
+
+  let answer = ''
+  let explanation = ''
+  let explanationHtml = ''
+  let pattern = ''
+  let options = []
+
+  if (gearCount % 2 === 1) {
+    answer = 'The gears do not turn at all'
+    options = shuffle([
+      answer,
+      gearPairText(sameDirection.slice(0, 2)),
+      gearPairText(oppositeDirectionGears.slice(0, 2)),
+      gearPairText([oppositeDirectionGears[0], sameDirection[0]]),
+    ].filter(Boolean))
+    explanation = 'An odd closed loop of meshing gears creates a contradiction in rotation direction, so the system locks and none of the gears can turn.'
+    explanationHtml = `
+      <div class="formula-block">
+        <div class="formula-line">Each meshing gear reverses direction.</div>
+        <div class="formula-line">This loop contains ${gearCount} gears, which is an odd number.</div>
+        <div class="formula-line">Following the loop all the way around would require Gear 1 to rotate both clockwise and counterclockwise.</div>
+        <div class="formula-line">That contradiction means the gear train jams, so the gears do not turn at all.</div>
+      </div>
+    `
+    pattern = 'A closed gear loop with an odd number of gears locks up because the reversals are inconsistent.'
+  } else {
+    const correctPair = sameDirection.length >= 2 ? sameDirection.slice(0, 2) : [sameDirection[0], labels[labels.length - 1]]
+    answer = gearPairText(correctPair)
+    options = shuffle([
+      answer,
+      gearPairText(oppositeDirectionGears.slice(0, 2)),
+      gearPairText([oppositeDirectionGears[0], sameDirection[0]]),
+      'The gears do not turn at all',
+    ].filter(Boolean))
+    explanation = `Every gear contact reverses direction once, so the gears in positions ${answer} rotate in the same direction as Gear 1.`
+    explanationHtml = `
+      <div class="formula-block">
+        <div class="formula-line">Each gear mesh reverses direction.</div>
+        <div class="formula-line">This loop contains ${gearCount} gears, which is an even number, so it can rotate freely.</div>
+        <div class="formula-line">Starting from Gear 1, gears 3, 5${gearCount >= 8 ? ', 7' : ''} match Gear 1 because they are an even number of reversals away.</div>
+        <div class="formula-line">Therefore the correct pair is ${answer}.</div>
+      </div>
+    `
+    pattern = 'In a gear loop, even-number loops can rotate. Gears an even number of contacts away turn in the same direction.'
+  }
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-gear-loop-${gearCount}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which of the gears turn in the same direction as gear 1?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Gear loop</strong></div>
+        <svg viewBox="0 0 410 235" width="100%" height="235" style="display:block;margin-top:10px;">
+          ${positions.map(position => gearCogSvg(position.x, position.y, position.r, String(position.label))).join('')}
+        </svg>
+        <div class="small center mt8">Adjacent gears reverse direction. First check whether the closed loop can rotate at all.</div>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation,
+    explanationHtml,
+    pattern,
+  }
+}
+
+function mechanicalBeltShaftSpeed(difficulty) {
+  const scenarios = [
+    { shaft1: 20, shaft2Driven: 40, shaft2Driver: 18, shaft3: 36 },
+    { shaft1: 36, shaft2Driven: 18, shaft2Driver: 16, shaft3: 32 },
+    { shaft1: 30, shaft2Driven: 15, shaft2Driver: 30, shaft3: 15 },
+  ]
+  const setup = pick(scenarios)
+  const speed1 = 1
+  const speed2 = setup.shaft1 / setup.shaft2Driven
+  const speed3 = speed2 * (setup.shaft2Driver / setup.shaft3)
+  const speeds = [speed1, speed2, speed3]
+  const fastestIndex = speeds.indexOf(Math.max(...speeds))
+  const answer = String(fastestIndex + 1)
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-belt-shaft-speed-${answer}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which shaft turns fastest?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Belt and pulley system</strong></div>
+        <svg viewBox="0 0 420 230" width="100%" height="230" style="display:block;margin-top:10px;">
+          <line x1="42" y1="136" x2="144" y2="136" stroke="#9ca3af" stroke-width="4"></line>
+          <line x1="170" y1="64" x2="302" y2="64" stroke="#9ca3af" stroke-width="4"></line>
+          <line x1="165" y1="178" x2="278" y2="178" stroke="#9ca3af" stroke-width="4"></line>
+          ${beltPulleySvg(95, 136, setup.shaft1, '1')}
+          ${beltPulleySvg(200, 64, setup.shaft2Driven, '')}
+          ${beltPulleySvg(278, 64, setup.shaft2Driver, '2')}
+          ${beltPulleySvg(226, 178, setup.shaft3, '3')}
+          <line x1="95" y1="${136 - setup.shaft1}" x2="200" y2="${64 - setup.shaft2Driven}" stroke="#111827" stroke-width="4"></line>
+          <line x1="95" y1="${136 + setup.shaft1}" x2="200" y2="${64 + setup.shaft2Driven}" stroke="#111827" stroke-width="4"></line>
+          <line x1="278" y1="${64 + setup.shaft2Driver}" x2="226" y2="${178 - setup.shaft3}" stroke="#111827" stroke-width="4"></line>
+          <line x1="278" y1="${64 - setup.shaft2Driver}" x2="226" y2="${178 + setup.shaft3}" stroke="#111827" stroke-width="4"></line>
+        </svg>
+        <div class="small center mt8">The belt speed is the same along each belt. Smaller driven pulleys rotate faster than larger ones.</div>
+      </div>
+    `,
+    options: ['1', '2', '3'].map(value => ({ text: value, plain: value })),
+    correctIndex: ['1', '2', '3'].indexOf(answer),
+    explanation: `Shaft ${answer} has the greatest rotational speed once the pulley ratios are applied through the belt train.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Take Shaft 1 speed as 1.00x.</div>
+        <div class="formula-line">Shaft 2 speed = ${setup.shaft1} / ${setup.shaft2Driven} = ${speed2.toFixed(2)}x</div>
+        <div class="formula-line">Shaft 3 speed = ${speed2.toFixed(2)} x (${setup.shaft2Driver} / ${setup.shaft3}) = ${speed3.toFixed(2)}x</div>
+        <div class="formula-line">The largest speed is on Shaft ${answer}.</div>
+      </div>
+    `,
+    pattern: 'For belt drives, rotational speed changes inversely with pulley size. Multiply the ratios stage by stage.'
+  }
+}
+
+function mechanicalRopeSlip(difficulty) {
+  const answer = pick(['A', 'B'])
+  const wrapsA = answer === 'A' ? 2.3 : 1.2
+  const wrapsB = answer === 'B' ? 2.3 : 1.2
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-rope-slip-${answer}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which rope is less likely to slip?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Rope friction</strong></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" style="display:block;margin-top:10px;">
+          ${ropeSlipSvg(130, 'A', wrapsA)}
+          ${ropeSlipSvg(290, 'B', wrapsB)}
+        </svg>
+      </div>
+    `,
+    options: ['A', 'B', 'No difference'].map(value => ({ text: value, plain: value })),
+    correctIndex: ['A', 'B', 'No difference'].indexOf(answer),
+    explanation: `Rope ${answer} wraps around the support more, so it has a larger contact angle and more friction resisting slip.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">More rope contact with the support means more friction.</div>
+        <div class="formula-line">Rope A wrap amount = ${wrapsA.toFixed(1)} turns</div>
+        <div class="formula-line">Rope B wrap amount = ${wrapsB.toFixed(1)} turns</div>
+        <div class="formula-line">So rope ${answer} is less likely to slip.</div>
+      </div>
+    `,
+    pattern: 'For ropes around hooks or posts, more wrap angle gives greater friction and less slipping.'
+  }
+}
+
+function mechanicalBulbCircuit(difficulty) {
+  const correctLabel = pick(['A', 'B', 'C'])
+  const layouts = {
+    A: correctLabel === 'A' ? 'correct' : correctLabel === 'B' ? 'same-contact' : 'open',
+    B: correctLabel === 'B' ? 'correct' : correctLabel === 'C' ? 'same-contact' : 'open',
+    C: correctLabel === 'C' ? 'correct' : correctLabel === 'A' ? 'same-contact' : 'open',
+  }
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bulb-circuit-${correctLabel}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which picture shows how the bulb should be connected to the battery for the bulb to light?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Simple electrical circuit</strong></div>
+        <svg viewBox="0 0 450 240" width="100%" height="240" style="display:block;margin-top:10px;">
+          ${bulbCircuitOptionSvg(85, 'A', layouts.A)}
+          ${bulbCircuitOptionSvg(225, 'B', layouts.B)}
+          ${bulbCircuitOptionSvg(365, 'C', layouts.C)}
+        </svg>
+      </div>
+    `,
+    options: ['A', 'B', 'C'].map(value => ({ text: value, plain: value })),
+    correctIndex: ['A', 'B', 'C'].indexOf(correctLabel),
+    explanation: `Only picture ${correctLabel} makes a complete circuit by connecting one battery terminal to the bulb tip and the other terminal to the metal side of the bulb.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">A bulb lights only if current can pass through the filament in a closed loop.</div>
+        <div class="formula-line">That requires one battery terminal to contact the bulb tip and the other to contact the bulb's metal casing.</div>
+        <div class="formula-line">Only option ${correctLabel} creates that complete circuit.</div>
+      </div>
+    `,
+    pattern: 'A bulb needs a closed circuit with two different bulb contacts: the bottom tip and the metal side.'
+  }
+}
+
+function mechanicalBarLock(difficulty) {
+  const answer = pick(['1', '2', '3'])
+  const shoulderText = answer === '1'
+    ? 'the front upper shoulder near the frame'
+    : answer === '2'
+    ? 'the rear upper shoulder on the bar'
+    : 'the lower shoulder under the bar'
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bar-lock-${answer}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which block wedge 1, 2 or 3 has to be removed so that you can pull bar A and open door B? (C is the door frame)',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Door bar lock</strong></div>
+        <svg viewBox="0 0 460 240" width="100%" height="240" style="display:block;margin-top:10px;">
+          ${barLockDiagramSvg(answer)}
+        </svg>
+        <div class="small center mt8">Bar A must slide to the right. Remove the wedge that actually sits in the path of a locking shoulder.</div>
+      </div>
+    `,
+    options: ['1', '2', '3'].map(value => ({ text: value, plain: value })),
+    correctIndex: ['1', '2', '3'].indexOf(answer),
+    explanation: `When bar A is pulled to the right, ${shoulderText} hits wedge ${answer} first. Removing wedge ${answer} frees the bar; removing either of the others still leaves the blocking contact in place.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">First identify the direction of motion: bar A has to slide to the right.</div>
+        <div class="formula-line">Then follow the shoulders on the bar and see which wedge lies directly in that path.</div>
+        <div class="formula-line">Here ${shoulderText} is blocked by wedge ${answer}.</div>
+        <div class="formula-line">So wedge ${answer} must be removed.</div>
+      </div>
+    `,
+    pattern: 'In lock diagrams, follow the moving part in its actual direction of travel and identify the first piece that physically blocks that motion.'
+  }
+}
+
+function mechanicalBulbCount(difficulty) {
+  const scenarios = [
+    {
+      key: 'open-series',
+      answer: 'none',
+      explanation: 'Bulb 1 is in series with the supply path into the rest of the circuit. Removing it opens the circuit before current can reach any other bulb.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">A removed bulb acts like an open switch.</div>
+          <div class="formula-line">Here bulb 1 lies in series with the rest of the circuit.</div>
+          <div class="formula-line">Once bulb 1 is removed, the loop is broken before any branch is reached.</div>
+          <div class="formula-line">So no bulbs light.</div>
+        </div>
+      `,
+      pattern: 'If a removed bulb opens the only supply path, the entire circuit goes dead.'
+    },
+    {
+      key: 'two-live',
+      answer: '2',
+      explanation: 'Bulb 1 is on a separate branch, so removing it does not break the main loop. Bulb 3 is on an incomplete side branch, so only bulbs 2 and 4 still light.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Treat bulb 1 as an open branch after removal.</div>
+          <div class="formula-line">There is still one complete loop through bulb 2 and bulb 4.</div>
+          <div class="formula-line">Bulb 3 sits on a dead-end branch and has no complete return path.</div>
+          <div class="formula-line">So exactly 2 bulbs light.</div>
+        </div>
+      `,
+      pattern: 'Count only bulbs that remain on a complete closed path from one battery terminal back to the other.'
+    },
+    {
+      key: 'three-live',
+      answer: '3',
+      explanation: 'Bulb 1 is on a separate spur and can be removed without affecting the main loop. Bulbs 2, 3 and 4 remain on the closed circuit, so all three light.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">After removing bulb 1, ignore that dead side branch.</div>
+          <div class="formula-line">The main circuit still forms a complete loop.</div>
+          <div class="formula-line">Bulbs 2, 3 and 4 are all still on that loop.</div>
+          <div class="formula-line">So 3 bulbs light.</div>
+        </div>
+      `,
+      pattern: 'A bulb on a side spur can be removed without killing the main loop if the rest of the circuit still closes.'
+    }
+  ]
+  const scenario = pick(scenarios)
+  const options = ['2', '3', 'none']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bulb-count-${scenario.key}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'If bulb 1 is removed, how many bulbs will light up when the switch is closed?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Electrical circuit</strong></div>
+        <svg viewBox="0 0 430 235" width="100%" height="235" style="display:block;margin-top:10px;">
+          ${bulbCountCircuitSvg(scenario.key)}
+        </svg>
+        <div class="small center mt8">Treat the removed bulb as an open circuit at that position, then count the bulbs that still lie on a closed loop.</div>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.explanation,
+    explanationHtml: scenario.explanationHtml,
+    pattern: scenario.pattern,
+  }
+}
+
+function barLockDiagramSvg(blockingLabel) {
+  const wedges = {
+    1: { x: blockingLabel === '1' ? 270 : 244, y: 58 },
+    2: { x: blockingLabel === '2' ? 164 : 136, y: 58 },
+    3: { x: blockingLabel === '3' ? 218 : 248, y: 126 },
+  }
+
+  return `
+    <rect x="46" y="84" width="28" height="36" fill="#e5e7eb" stroke="#6b7280" stroke-width="2"></rect>
+    <rect x="74" y="92" width="238" height="20" rx="3" fill="#d1d5db" stroke="#374151" stroke-width="3"></rect>
+    <rect x="156" y="82" width="16" height="10" fill="#9ca3af" stroke="#111827" stroke-width="2"></rect>
+    <rect x="262" y="82" width="16" height="10" fill="#9ca3af" stroke="#111827" stroke-width="2"></rect>
+    <rect x="212" y="112" width="16" height="10" fill="#9ca3af" stroke="#111827" stroke-width="2"></rect>
+    <circle cx="180" cy="102" r="5" fill="#f8fafc" stroke="#6b7280" stroke-width="2"></circle>
+    <circle cx="236" cy="102" r="5" fill="#f8fafc" stroke="#6b7280" stroke-width="2"></circle>
+    <rect x="314" y="60" width="10" height="104" fill="#111827"></rect>
+    <rect x="346" y="48" width="8" height="128" fill="#6b7280"></rect>
+    <rect x="324" y="86" width="22" height="24" fill="#e5e7eb" stroke="#6b7280" stroke-width="2"></rect>
+    <rect x="324" y="114" width="22" height="24" fill="#e5e7eb" stroke="#6b7280" stroke-width="2"></rect>
+    <rect x="360" y="88" width="16" height="40" fill="#111827"></rect>
+    <rect x="${wedges[1].x}" y="${wedges[1].y}" width="16" height="26" fill="#111827"></rect>
+    <rect x="${wedges[2].x}" y="${wedges[2].y}" width="16" height="26" fill="#111827"></rect>
+    <rect x="${wedges[3].x}" y="${wedges[3].y}" width="16" height="26" fill="#111827"></rect>
+    <text x="172" y="52" text-anchor="middle" font-size="17" font-weight="700">2</text>
+    <text x="278" y="52" text-anchor="middle" font-size="17" font-weight="700">1</text>
+    <text x="226" y="162" text-anchor="middle" font-size="17" font-weight="700">3</text>
+    <text x="190" y="140" text-anchor="middle" font-size="18" font-weight="700">A</text>
+    <text x="319" y="182" text-anchor="middle" font-size="18" font-weight="700">B</text>
+    <text x="350" y="182" text-anchor="middle" font-size="18" font-weight="700">C</text>
+    <path d="M 120 154 L 94 154 L 102 148 M 94 154 L 102 160" fill="none" stroke="#111827" stroke-width="3"></path>
+    <path d="M 250 176 L 292 176 L 284 170 M 292 176 L 284 182" fill="none" stroke="#111827" stroke-width="3"></path>
+  `
+}
+
+function bulbCountCircuitSvg(mode) {
+  const bulbs = `
+    ${countCircuitBulbSvg(96, 126, '1')}
+    ${countCircuitBulbSvg(170, 70, '2')}
+    ${countCircuitBulbSvg(266, 70, '3')}
+    ${countCircuitBulbSvg(334, 126, '4')}
+  `
+  const base = `
+    <line x1="94" y1="194" x2="156" y2="194" stroke="#111827" stroke-width="4"></line>
+    <line x1="170" y1="184" x2="170" y2="204" stroke="#111827" stroke-width="3"></line>
+    <line x1="182" y1="180" x2="182" y2="208" stroke="#111827" stroke-width="5"></line>
+    <line x1="182" y1="194" x2="244" y2="194" stroke="#111827" stroke-width="4"></line>
+    <line x1="244" y1="194" x2="270" y2="194" stroke="#111827" stroke-width="4"></line>
+    <line x1="284" y1="188" x2="306" y2="194" stroke="#111827" stroke-width="4"></line>
+    <line x1="306" y1="194" x2="336" y2="194" stroke="#111827" stroke-width="4"></line>
+  `
+
+  if (mode === 'open-series') {
+    return `
+      ${base}
+      <line x1="96" y1="194" x2="96" y2="144" stroke="#111827" stroke-width="4"></line>
+      <line x1="96" y1="108" x2="96" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="96" y1="76" x2="154" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="186" y1="76" x2="250" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="282" y1="76" x2="334" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="334" y1="76" x2="334" y2="108" stroke="#111827" stroke-width="4"></line>
+      <line x1="334" y1="144" x2="334" y2="194" stroke="#111827" stroke-width="4"></line>
+      <line x1="96" y1="194" x2="210" y2="118" stroke="#6b7280" stroke-width="3"></line>
+      <line x1="334" y1="194" x2="210" y2="118" stroke="#6b7280" stroke-width="3"></line>
+      <circle cx="210" cy="118" r="4" fill="#111827"></circle>
+      ${bulbs}
+    `
+  }
+
+  if (mode === 'two-live') {
+    return `
+      ${base}
+      <line x1="96" y1="194" x2="96" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="96" y1="76" x2="154" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="186" y1="76" x2="238" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="238" y1="76" x2="334" y2="108" stroke="#111827" stroke-width="4"></line>
+      <line x1="334" y1="144" x2="334" y2="194" stroke="#111827" stroke-width="4"></line>
+      <line x1="96" y1="126" x2="150" y2="118" stroke="#6b7280" stroke-width="3"></line>
+      <line x1="112" y1="126" x2="188" y2="126" stroke="#6b7280" stroke-width="3"></line>
+      <line x1="250" y1="76" x2="250" y2="54" stroke="#111827" stroke-width="4"></line>
+      <line x1="282" y1="76" x2="312" y2="76" stroke="#111827" stroke-width="4"></line>
+      <line x1="312" y1="76" x2="312" y2="96" stroke="#111827" stroke-width="4"></line>
+      ${bulbs}
+    `
+  }
+
+  return `
+    ${base}
+    <line x1="96" y1="194" x2="96" y2="76" stroke="#111827" stroke-width="4"></line>
+    <line x1="96" y1="76" x2="154" y2="76" stroke="#111827" stroke-width="4"></line>
+    <line x1="186" y1="76" x2="250" y2="76" stroke="#111827" stroke-width="4"></line>
+    <line x1="282" y1="76" x2="334" y2="76" stroke="#111827" stroke-width="4"></line>
+    <line x1="334" y1="76" x2="334" y2="108" stroke="#111827" stroke-width="4"></line>
+    <line x1="334" y1="144" x2="334" y2="194" stroke="#111827" stroke-width="4"></line>
+    <line x1="96" y1="126" x2="140" y2="112" stroke="#6b7280" stroke-width="3"></line>
+    <line x1="112" y1="126" x2="168" y2="126" stroke="#6b7280" stroke-width="3"></line>
+    ${bulbs}
+  `
+}
+
+function countCircuitBulbSvg(cx, cy, label) {
+  return `
+    <g>
+      <circle cx="${cx}" cy="${cy}" r="18" fill="#ffffff" stroke="#111827" stroke-width="3"></circle>
+      <path d="M ${cx - 8} ${cy} Q ${cx} ${cy - 10} ${cx + 8} ${cy}" fill="none" stroke="#6b7280" stroke-width="2"></path>
+      <text x="${cx}" y="${cy - 26}" text-anchor="middle" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+function gearPairText(pair) {
+  return pair.filter(Boolean).map(value => String(value)).join(' and ')
+}
+
+function gearCogSvg(cx, cy, r, label) {
+  const teeth = Array.from({ length: 12 }, (_, index) => {
+    const angle = (index * Math.PI * 2) / 12
+    const x1 = cx + Math.cos(angle) * (r + 2)
+    const y1 = cy + Math.sin(angle) * (r + 2)
+    const x2 = cx + Math.cos(angle) * (r + 9)
+    const y2 = cy + Math.sin(angle) * (r + 9)
+    return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#a3a3a3" stroke-width="4"></line>`
+  }).join('')
+
+  return `
+    <g>
+      ${teeth}
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#d4d4d8" stroke="#737373" stroke-width="3"></circle>
+      <circle cx="${cx}" cy="${cy}" r="${Math.max(5, r / 4)}" fill="#94a3b8"></circle>
+      <text x="${cx - r - 10}" y="${cy - r + 4}" font-size="16" font-weight="700" fill="#111827">${label}</text>
+    </g>
+  `
+}
+
+function beltPulleySvg(cx, cy, r, label) {
+  return `
+    <g>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#f3f4f6" stroke="#111827" stroke-width="4"></circle>
+      <circle cx="${cx}" cy="${cy}" r="${Math.max(4, r / 5)}" fill="#9ca3af"></circle>
+      ${label ? `<text x="${cx + r + 10}" y="${cy - r + 6}" font-size="16" font-weight="700">${label}</text>` : ''}
+    </g>
+  `
+}
+function ropeSlipSvg(cx, label, wraps) {
+  const loops = Math.round(wraps)
+  const ropeLines = Array.from({ length: loops }, (_, index) => {
+    const y = 56 + index * 18
+    return `<path d="M ${cx - 34} ${y} C ${cx - 6} ${y - 16}, ${cx + 6} ${y - 16}, ${cx + 26} ${y} C ${cx + 8} ${y + 18}, ${cx - 8} ${y + 18}, ${cx - 24} ${y}" fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round"></path>`
+  }).join('')
+
+  return `
+    <g>
+      <path d="M ${cx - 8} 20 Q ${cx} 6 ${cx + 12} 20" fill="none" stroke="#6b7280" stroke-width="8"></path>
+      <line x1="${cx + 2}" y1="22" x2="${cx + 2}" y2="150" stroke="#6b7280" stroke-width="8"></line>
+      ${ropeLines}
+      <line x1="${cx + 2}" y1="142" x2="${cx + 2}" y2="182" stroke="#111827" stroke-width="6"></line>
+      <rect x="${cx - 34}" y="182" width="72" height="22" fill="#d1d5db" stroke="#737373" stroke-width="2"></rect>
+      <text x="${cx + 28}" y="42" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function bulbCircuitOptionSvg(cx, label, type) {
+  const leftTerminal = cx - 18
+  const rightTerminal = cx + 18
+  const bulbBaseY = 92
+  const bulbTipY = 126
+  const wireA = type === 'correct'
+    ? `<path d="M ${leftTerminal} 174 C ${leftTerminal - 22} 132, ${cx - 40} 112, ${cx - 18} 92" fill="none" stroke="#111827" stroke-width="5"></path>`
+    : type === 'same-contact'
+    ? `<path d="M ${leftTerminal} 174 C ${leftTerminal - 10} 146, ${cx - 10} 140, ${cx - 8} 112" fill="none" stroke="#111827" stroke-width="5"></path>`
+    : `<path d="M ${leftTerminal} 174 C ${leftTerminal - 20} 144, ${cx - 52} 110, ${cx - 48} 78" fill="none" stroke="#111827" stroke-width="5"></path>`
+  const wireB = type === 'correct'
+    ? `<path d="M ${rightTerminal} 174 C ${rightTerminal + 8} 154, ${cx + 6} 142, ${cx} ${bulbTipY}" fill="none" stroke="#111827" stroke-width="5"></path>`
+    : type === 'same-contact'
+    ? `<path d="M ${rightTerminal} 174 C ${rightTerminal + 14} 146, ${cx + 24} 120, ${cx + 8} 108" fill="none" stroke="#111827" stroke-width="5"></path>`
+    : `<path d="M ${rightTerminal} 174 C ${rightTerminal + 14} 154, ${cx + 30} 140, ${cx + 24} 110" fill="none" stroke="#111827" stroke-width="5"></path>`
+
+  return `
+    <g>
+      <text x="${cx}" y="20" text-anchor="middle" font-size="18" font-weight="700">${label}</text>
+      <rect x="${cx - 24}" y="150" width="48" height="56" fill="#d1d5db" stroke="#737373" stroke-width="3"></rect>
+      <rect x="${leftTerminal - 5}" y="142" width="10" height="8" fill="#737373"></rect>
+      <rect x="${rightTerminal - 5}" y="142" width="10" height="8" fill="#737373"></rect>
+      <ellipse cx="${cx}" cy="56" rx="26" ry="30" fill="none" stroke="#111827" stroke-width="4"></ellipse>
+      <rect x="${cx - 11}" y="84" width="22" height="16" rx="4" fill="#d1d5db" stroke="#111827" stroke-width="3"></rect>
+      <circle cx="${cx}" cy="${bulbTipY}" r="4" fill="#111827"></circle>
+      <path d="M ${cx - 12} 84 Q ${cx} 74 ${cx + 12} 84" fill="none" stroke="#111827" stroke-width="3"></path>
+      ${wireA}
+      ${wireB}
+    </g>
+  `
+}
 function carSvg(x, y, scale) {
   return `
     <g transform="translate(${x}, ${y}) scale(${scale})">
@@ -778,6 +1306,9 @@ function jarSvg(cx, scale, hasHoles, label) {
 function oppositeDirection(direction) {
   return direction === 'Clockwise' ? 'Counterclockwise' : 'Clockwise'
 }
+
+
+
 
 
 

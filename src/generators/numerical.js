@@ -1,6 +1,8 @@
 import { getTimerSeconds, pick, randInt, shuffle } from '../engine-core'
 import { generateAssessmentDayNumerical } from './numericalAssessmentDay'
 
+const TRUE_FALSE_CANNOT_SAY = ['True', 'False', 'Cannot say']
+
 export function pieSvg(cx, cy, r, percentages, colors) {
       let startAngle = -Math.PI / 2;
       return percentages.map((pct, i) => {
@@ -19,10 +21,10 @@ export function pieSvg(cx, cy, r, percentages, colors) {
 
     export function generateNumerical(difficulty) {
       const types = difficulty === 'easy'
-        ? ['bar-profit', 'pie-growth', 'factory-output', 'averages', 'discount-table', 'assessmentday', 'assessmentday']
+        ? ['bar-profit', 'pie-growth', 'factory-output', 'averages', 'discount-table', 'statement-judgement', 'assessmentday', 'assessmentday']
         : difficulty === 'medium'
-        ? ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'assessmentday', 'assessmentday', 'assessmentday']
-        : ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'assessmentday', 'assessmentday', 'assessmentday'];
+        ? ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'statement-judgement', 'statement-judgement', 'assessmentday', 'assessmentday', 'assessmentday']
+        : ['bar-profit', 'pie-growth', 'loan-fine', 'factory-output', 'discount-table', 'averages', 'time-work', 'table-comparison', 'statement-judgement', 'statement-judgement', 'assessmentday', 'assessmentday', 'assessmentday'];
       const type = pick(types);
       if (type === 'bar-profit') return numericalBarProfit(difficulty);
       if (type === 'loan-fine') return numericalLoanFine(difficulty);
@@ -31,6 +33,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       if (type === 'averages') return numericalAverages(difficulty);
       if (type === 'time-work') return numericalTimeWork(difficulty);
       if (type === 'table-comparison') return numericalTableComparison(difficulty);
+      if (type === 'statement-judgement') return numericalStatementJudgement(difficulty);
       if (type === 'assessmentday') return generateAssessmentDayNumerical(difficulty);
       return numericalPieGrowth(difficulty);
     }
@@ -82,8 +85,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         visualHtml,
         options: options.map(t => ({ text: t, plain: t })),
         correctIndex,
-        explanation: `Сначала читаем вопрос: compare January sales profit with wages. Нужны только January bars, hours and wage rate. Profit = bar value × scale. Wage = hours × rate. Затем сравниваем каждого отдельно.`,
-        pattern: `Question first → only needed data → one formula per column: profit = units × scale, wage = hours × rate.`
+        explanation: `Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ñ‡Ð¸Ñ‚Ð°ÐµÐ¼ Ð²Ð¾Ð¿Ñ€Ð¾Ñ: compare January sales profit with wages. ÐÑƒÐ¶Ð½Ñ‹ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ January bars, hours and wage rate. Profit = bar value Ã— scale. Wage = hours Ã— rate. Ð—Ð°Ñ‚ÐµÐ¼ ÑÑ€Ð°Ð²Ð½Ð¸Ð²Ð°ÐµÐ¼ ÐºÐ°Ð¶Ð´Ð¾Ð³Ð¾ Ð¾Ñ‚Ð´ÐµÐ»ÑŒÐ½Ð¾.`,
+        pattern: `Question first â†’ only needed data â†’ one formula per column: profit = units Ã— scale, wage = hours Ã— rate.`
       };
     }
 
@@ -263,8 +266,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         visualHtml,
         options: options.map(v => ({ text: `$${v.toLocaleString()}`, plain: `$${v.toLocaleString()}` })),
         correctIndex,
-        explanation: `Сначала суммируем все bar values, потом умножаем на loans per unit. Это даёт total loans. Далее берём 1 из ${ratioA}, то есть делим на ${ratioA}. И только потом умножаем на fine $${fine}.`,
-        pattern: `Multi-step filter: total first → fraction second → money last.`
+        explanation: `Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° ÑÑƒÐ¼Ð¼Ð¸Ñ€ÑƒÐµÐ¼ Ð²ÑÐµ bar values, Ð¿Ð¾Ñ‚Ð¾Ð¼ ÑƒÐ¼Ð½Ð¾Ð¶Ð°ÐµÐ¼ Ð½Ð° loans per unit. Ð­Ñ‚Ð¾ Ð´Ð°Ñ‘Ñ‚ total loans. Ð”Ð°Ð»ÐµÐµ Ð±ÐµÑ€Ñ‘Ð¼ 1 Ð¸Ð· ${ratioA}, Ñ‚Ð¾ ÐµÑÑ‚ÑŒ Ð´ÐµÐ»Ð¸Ð¼ Ð½Ð° ${ratioA}. Ð˜ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð¿Ð¾Ñ‚Ð¾Ð¼ ÑƒÐ¼Ð½Ð¾Ð¶Ð°ÐµÐ¼ Ð½Ð° fine $${fine}.`,
+        pattern: `Multi-step filter: total first â†’ fraction second â†’ money last.`
       };
     }
 
@@ -411,7 +414,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         visualHtml,
         options: options.map(v => ({ text: `$${Number(v).toFixed(2)}`, plain: `$${Number(v).toFixed(2)}` })),
         correctIndex,
-        explanation: `First find the pre-discount total: ${qty} × $${prices[idx].toFixed(2)}. Then apply the ${discount}% reduction to that total, giving $${total.toFixed(2)}.`,
+        explanation: `First find the pre-discount total: ${qty} Ã— $${prices[idx].toFixed(2)}. Then apply the ${discount}% reduction to that total, giving $${total.toFixed(2)}.`,
         pattern: `Multiply quantity first, apply discount second. Do not subtract the percent as a raw number.`
       };
     }
@@ -449,7 +452,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         options: options.map(v => ({ text: `${v}`, plain: `${v}` })),
         correctIndex,
         explanation: askForNeeded
-          ? `Required total = ${avg} × ${scores.length}. Subtract the other three known scores to find ${names[idx]}'s score: ${needed}.`
+          ? `Required total = ${avg} Ã— ${scores.length}. Subtract the other three known scores to find ${names[idx]}'s score: ${needed}.`
           : `Add all scores and divide by ${scores.length}. That gives an average of ${avg}.`,
         pattern: 'For averages, think in totals first: total sum, then divide, or reverse the process.'
       };
@@ -529,7 +532,327 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         pattern: 'For table questions, isolate the target row first before calculating.'
       };
     }
+    export function numericalStatementJudgement(difficulty) {
+      const families = difficulty === 'easy'
+        ? ['working-hours', 'mail-order']
+        : ['working-hours', 'mail-order', 'profit-loss'];
+      const family = pick(families);
+      if (family === 'working-hours') return numericalWorkingHoursJudgement(difficulty);
+      if (family === 'mail-order') return numericalMailOrderJudgement(difficulty);
+      return numericalProfitLossJudgement(difficulty);
+    }
 
+    export function numericalWorkingHoursJudgement(difficulty) {
+      const employees = ['Dasgupta', 'Newman', 'Sanders', 'Stratford', 'Lee', 'Watson'];
+      const agreed = [85, 175, 175, 85, 175, 175];
+      const actual = agreed.map((hours, index) => Math.max(70, hours + [-12, -8, -3, 0, 5, 7, 10, 12][(index + randInt(0, 7)) % 8]));
+      const promptType = pick(difficulty === 'easy'
+        ? ['employee-compare', 'month-claim']
+        : ['employee-compare', 'count-below', 'month-claim']);
+      let prompt = '';
+      let correctText = '';
+      let explanationHtml = '';
+      let variantKey = '';
+
+      if (promptType === 'employee-compare') {
+        const index = randInt(0, employees.length - 1);
+        const relation = pick(['more', 'fewer', 'exactly']);
+        const isTrue = relation === 'more'
+          ? actual[index] > agreed[index]
+          : relation === 'fewer'
+          ? actual[index] < agreed[index]
+          : actual[index] === agreed[index];
+        prompt = relation === 'more'
+          ? `${employees[index]} worked more actual hours than agreed in March.`
+          : relation === 'fewer'
+          ? `${employees[index]} worked fewer actual hours than agreed in March.`
+          : `${employees[index]} worked exactly the agreed number of hours in March.`;
+        correctText = isTrue ? 'True' : 'False';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">${employees[index]}: agreed ${agreed[index]} hours, actual ${actual[index]} hours.</div>
+            <div class="formula-line">Compare actual with agreed to test the statement.</div>
+          </div>
+        `;
+        variantKey = `numerical-judgement-working-hours-${relation}`;
+      } else if (promptType === 'count-below') {
+        const countBelow = actual.filter((value, index) => value < agreed[index]).length;
+        const statedCount = pick([countBelow, Math.max(0, countBelow - 1), Math.min(employees.length, countBelow + 1)]);
+        prompt = `Exactly ${statedCount} employees worked fewer actual hours than agreed in March.`;
+        correctText = statedCount === countBelow ? 'True' : 'False';
+        explanationHtml = `
+          <div class="formula-block">
+            ${employees.map((name, index) => `<div class="formula-line">${name}: ${actual[index]} ${actual[index] < agreed[index] ? '<' : actual[index] > agreed[index] ? '>' : '='} ${agreed[index]}</div>`).join('')}
+            <div class="formula-line">Employees below agreed hours = ${countBelow}</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-working-hours-count';
+      } else {
+        const index = randInt(0, employees.length - 1);
+        const febHours = actual[index] + pick([-14, -9, -5, 4, 7, 11]);
+        prompt = `${employees[index]} worked a total of ${febHours} actual working hours in February.`;
+        correctText = 'Cannot say';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">The table shows working hours for March only.</div>
+            <div class="formula-line">There is no February data, so the statement cannot be verified.</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-working-hours-month';
+      }
+
+      return {
+        topic: 'numerical',
+        topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-statement-judgement',
+        variantKey,
+        timer: getTimerSeconds('numerical', difficulty),
+        prompt,
+        subtext: 'Select True, False, or Cannot say based only on the data shown.',
+        visualHtml: renderNumericalTableCard(
+          'Working hours',
+          'Working hours for HR department employees in March',
+          ['Employee', 'Agreed working hours', 'Actual working hours'],
+          employees.map((name, index) => [name, String(agreed[index]), String(actual[index])]),
+          'Use only the March data shown in the table.'
+        ),
+        options: TRUE_FALSE_CANNOT_SAY.map(text => ({ text, plain: text })),
+        correctIndex: TRUE_FALSE_CANNOT_SAY.indexOf(correctText),
+        explanation: 'Check whether the statement follows from the displayed month only. Do not assume missing data.',
+        explanationHtml,
+        pattern: 'For statement questions, decide whether the claim is supported, contradicted, or not derivable from the data.'
+      };
+    }
+
+    export function numericalMailOrderJudgement(difficulty) {
+      const national = [7.0, 10.4, 15.0];
+      const international = [10.0, 11.6, 18.0];
+      const expressRates = {
+        'Express': 17.5,
+        'Express before 9 a.m.': 33.0,
+        'Express Sunday': 57.0,
+      };
+      const weights = [4, 8, 19];
+      const promptType = pick(difficulty === 'easy'
+        ? ['price-check', 'threshold-unknown']
+        : ['price-check', 'price-check', 'threshold-unknown']);
+      let prompt = '';
+      let correctText = '';
+      let explanationHtml = '';
+      let variantKey = '';
+
+      if (promptType === 'price-check') {
+        const bucketIndex = randInt(0, weights.length - 1);
+        const services = Object.keys(expressRates);
+        const service = pick(services);
+        const isInternational = pick([true, false]);
+        const total = national[bucketIndex] + (isInternational ? international[bucketIndex] : 0) + expressRates[service];
+        const quoted = pick([total, total + pick([2.0, 3.0, 4.0]), total - pick([1.0, 2.0, 3.0])]);
+        prompt = `${isInternational ? 'International' : 'National'} delivery of a parcel weighing ${weights[bucketIndex]} kilos via '${service}' costs £${quoted.toFixed(2)}.`;
+        correctText = Math.abs(quoted - total) < 0.001 ? 'True' : 'False';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Base national price = £${national[bucketIndex].toFixed(2)}</div>
+            <div class="formula-line">International surcharge = £${(isInternational ? international[bucketIndex] : 0).toFixed(2)}</div>
+            <div class="formula-line">${service} surcharge = £${expressRates[service].toFixed(2)}</div>
+            <div class="formula-line">Total = £${total.toFixed(2)}</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-mail-order-price';
+      } else {
+        const totalNational = national[2] + expressRates['Express Sunday'];
+        const totalInternational = national[2] + international[2] + expressRates['Express Sunday'];
+        prompt = 'A parcel weighing 19 kilos sent by Express Sunday costs more than £80.00.';
+        correctText = 'Cannot say';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">If national: £${national[2].toFixed(2)} + £${expressRates['Express Sunday'].toFixed(2)} = £${totalNational.toFixed(2)}</div>
+            <div class="formula-line">If international: £${national[2].toFixed(2)} + £${international[2].toFixed(2)} + £${expressRates['Express Sunday'].toFixed(2)} = £${totalInternational.toFixed(2)}</div>
+            <div class="formula-line">One total is below £80.00 and the other is above it.</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-mail-order-unknown';
+      }
+
+      return {
+        topic: 'numerical',
+        topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-statement-judgement',
+        variantKey,
+        timer: getTimerSeconds('numerical', difficulty),
+        prompt,
+        subtext: 'Select True, False, or Cannot say based only on the data shown.',
+        visualHtml: renderMailOrderCard(national, international, expressRates),
+        options: TRUE_FALSE_CANNOT_SAY.map(text => ({ text, plain: text })),
+        correctIndex: TRUE_FALSE_CANNOT_SAY.indexOf(correctText),
+        explanation: 'Build the parcel price from the relevant weight band plus any stated surcharges. If a key detail is missing, choose Cannot say.',
+        explanationHtml,
+        pattern: 'For delivery tables, start with the weight band, then add only the surcharges explicitly required.'
+      };
+    }
+
+    export function numericalProfitLossJudgement(difficulty) {
+      const products = ['Ignition coil', 'Ignition contact', 'Battery'];
+      const material = [10, 8, 15].map(value => value + pick([-1, 0, 1]));
+      const production = [15, 8, 25].map(value => value + pick([-1, 0, 1]));
+      const profit = [25, 10, 20].map(value => value + pick([-1, 0, 1]));
+      const totals = products.map((_, index) => material[index] + production[index] + profit[index]);
+      const promptType = pick(['production-compare', 'revenue-compare', 'units-unknown']);
+      let prompt = '';
+      let correctText = '';
+      let explanationHtml = '';
+      let variantKey = '';
+
+      if (promptType === 'production-compare') {
+        const isTrue = production[2] > production[1];
+        prompt = 'Production costs for manufacturing a battery are higher than production costs for manufacturing an ignition contact.';
+        correctText = isTrue ? 'True' : 'False';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Battery production cost = £${production[2]}</div>
+            <div class="formula-line">Ignition contact production cost = £${production[1]}</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-profit-loss-production';
+      } else if (promptType === 'revenue-compare') {
+        const isTrue = totals[0] > totals[1];
+        prompt = 'Total revenue for the ignition coil is greater than total revenue for the ignition contact.';
+        correctText = isTrue ? 'True' : 'False';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Ignition coil total = ${material[0]} + ${production[0]} + ${profit[0]} = £${totals[0]}</div>
+            <div class="formula-line">Ignition contact total = ${material[1]} + ${production[1]} + ${profit[1]} = £${totals[1]}</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-profit-loss-revenue';
+      } else {
+        prompt = 'More battery units were sold than ignition contact units.';
+        correctText = 'Cannot say';
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">The chart shows costs and profit amounts.</div>
+            <div class="formula-line">It does not show the number of units sold.</div>
+          </div>
+        `;
+        variantKey = 'numerical-judgement-profit-loss-units';
+      }
+
+      return {
+        topic: 'numerical',
+        topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-statement-judgement',
+        variantKey,
+        timer: getTimerSeconds('numerical', difficulty),
+        prompt,
+        subtext: 'Select True, False, or Cannot say based only on the data shown.',
+        visualHtml: renderProfitLossCard(products, material, production, profit),
+        options: TRUE_FALSE_CANNOT_SAY.map(text => ({ text, plain: text })),
+        correctIndex: TRUE_FALSE_CANNOT_SAY.indexOf(correctText),
+        explanation: 'For chart statements, compare only the values visible on the chart. Do not infer hidden variables such as units sold.',
+        explanationHtml,
+        pattern: 'True/False/Cannot say depends on whether the chart directly supports, contradicts, or omits the claim.'
+      };
+    }
+
+    function renderNumericalTableCard(title, subtitle, headers, rows, note = '') {
+      return `
+        <div class="chart">
+          <div class="center"><strong>${title}</strong></div>
+          <div class="small center mt8">${subtitle}</div>
+          <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;color:#111827;">
+            <thead>
+              <tr>
+                ${headers.map(header => `<th style="background:#d1d5db;border:1px solid #cbd5e1;padding:8px 6px;text-align:center;font-weight:700;">${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row, rowIndex) => `
+                <tr>
+                  ${row.map(cell => `<td style="background:${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">${cell}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          ${note ? `<div class="small mt8">${note}</div>` : ''}
+        </div>
+      `;
+    }
+
+    function renderMailOrderCard(national, international, expressRates) {
+      return `
+        <div class="chart">
+          <div class="center"><strong>Mail order</strong></div>
+          <div class="small center mt8">Delivery costs for parcels</div>
+          <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;color:#111827;">
+            <thead>
+              <tr>
+                <th style="background:#d1d5db;border:1px solid #cbd5e1;padding:8px 6px;">Weight</th>
+                <th style="background:#d1d5db;border:1px solid #cbd5e1;padding:8px 6px;">National</th>
+                <th style="background:#d1d5db;border:1px solid #cbd5e1;padding:8px 6px;">Int'l delivery surcharge</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${[['1 - 5 kg', national[0], international[0]], ['6 - 10 kg', national[1], international[1]], ['11 - 20 kg', national[2], international[2]]].map((row, index) => `
+                <tr>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">${row[0]}</td>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">£${Number(row[1]).toFixed(2)}</td>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">£${Number(row[2]).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="small center mt12">Express delivery surcharge</div>
+          <table style="width:72%;margin:10px auto 0;border-collapse:collapse;font-size:14px;color:#111827;">
+            <thead>
+              <tr>
+                <th style="background:#d1d5db;border:1px solid #cbd5e1;padding:8px 6px;">Service</th>
+                <th style="background:#d1d5db;border:1px solid #cbd5e1;padding:8px 6px;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(expressRates).map(([service, price], index) => `
+                <tr>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">${service}</td>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">£${price.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="small mt8">Int'l delivery surcharge is added on top of the national price.</div>
+        </div>
+      `;
+    }
+
+    function renderProfitLossCard(products, material, production, profit) {
+      const maxTotal = Math.max(...products.map((_, index) => material[index] + production[index] + profit[index]));
+      return `
+        <div class="chart">
+          <div class="center"><strong>Profit &amp; loss</strong></div>
+          <div style="display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:12px 0 10px;font-size:13px;color:#111827;">
+            <div><span style="display:inline-block;width:12px;height:12px;background:#111827;margin-right:6px;"></span>Material costs</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#94a3b8;margin-right:6px;"></span>Production costs</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#2563eb;margin-right:6px;"></span>Profit</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;align-items:end;min-height:220px;">
+            ${products.map((product, index) => {
+              const materialHeight = Math.max(18, Math.round(material[index] / maxTotal * 150));
+              const productionHeight = Math.max(18, Math.round(production[index] / maxTotal * 150));
+              const profitHeight = Math.max(18, Math.round(profit[index] / maxTotal * 150));
+              return `
+                <div style="display:grid;justify-items:center;gap:10px;">
+                  <div style="display:flex;align-items:flex-end;height:170px;gap:0;">
+                    <div style="width:44px;height:${materialHeight}px;background:#111827;border-top-left-radius:6px;border-top-right-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">${material[index]}</div>
+                    <div style="width:44px;height:${productionHeight}px;background:#94a3b8;border-top-left-radius:6px;border-top-right-radius:6px;display:flex;align-items:center;justify-content:center;color:#111827;font-size:12px;">${production[index]}</div>
+                    <div style="width:44px;height:${profitHeight}px;background:#2563eb;border-top-left-radius:6px;border-top-right-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">${profit[index]}</div>
+                  </div>
+                  <div class="small center">${product}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
     function round1(value) {
       return Math.round(value * 10) / 10;
     }
@@ -548,6 +871,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
     export function askWholeNumber(value) {
       return Math.abs(value - Math.round(value)) < 0.001;
     }
+
+
 
 
 

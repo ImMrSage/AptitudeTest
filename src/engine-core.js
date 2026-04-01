@@ -35,7 +35,7 @@ export function createInitialState() {
     export const TOPICS = [
       { value: 'numerical', label: 'Numerical reasoning' },
       { value: 'verbal', label: 'Verbal reasoning' },
-      { value: 'logical', label: 'Abstract logical reasoning' },
+      { value: 'logical', label: 'Abstract / diagrammatic reasoning' },
       { value: 'concentration', label: 'Concentration' },
       { value: 'planning', label: 'Planning' },
       { value: 'quantitative', label: 'AP Quantitative' },
@@ -91,7 +91,7 @@ export function topicLabel(k) {
       return ({
         numerical: 'Numerical reasoning',
         verbal: 'Verbal reasoning',
-        logical: 'Abstract logical reasoning',
+        logical: 'Abstract / diagrammatic reasoning',
         concentration: 'Concentration',
         planning: 'Planning',
         quantitative: 'AP Quantitative',
@@ -123,4 +123,5 @@ export function topicLabel(k) {
       };
       return limits[topic] || 20;
     }
+
 
