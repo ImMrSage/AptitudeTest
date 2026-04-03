@@ -5,8 +5,8 @@ import {
   formatTime,
   generateSession,
   questionTemplateSignature,
-  topicLabel,
 } from '../engine'
+import { topicLabel } from '../utils/i18n'
 
 export function useTrainerSession() {
   const [state, setState] = useState(() => createInitialState())
@@ -123,14 +123,14 @@ export function useTrainerSession() {
   const summaryScore = state.answers.filter((answer, index) => answer && answer.answerIndex === state.questions[index].correctIndex).length
   const summaryAccuracy = state.answers.length ? Math.round((summaryScore / state.answers.length) * 100) : 0
 
-  let weakTopic = 'No data yet'
+  let weakTopic = state.language === 'de' ? 'Noch keine Daten' : 'No data yet'
   let worstPct = Infinity
   for (const [topic, stats] of Object.entries(state.stats.byTopic)) {
     if (stats.total === 0) continue
     const pct = stats.correct / stats.total
     if (pct < worstPct) {
       worstPct = pct
-      weakTopic = topicLabel(topic)
+      weakTopic = topicLabel(topic, state.language)
     }
   }
 
@@ -138,7 +138,7 @@ export function useTrainerSession() {
     activeTimedQuestionIdRef.current = null
     setState(prev => {
       const count = Math.max(1, Number(prev.count) || 1)
-      const questions = generateSession(prev.topic, prev.difficulty, count, prev.mode, prev.lastQuestionTemplateSignature)
+      const questions = generateSession(prev.topic, prev.difficulty, count, prev.mode, prev.lastQuestionTemplateSignature, prev.language)
       return {
         ...prev,
         count,

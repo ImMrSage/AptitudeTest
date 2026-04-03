@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import BottomTabs from './components/BottomTabs'
 import TopBar from './components/TopBar'
 import { useTrainerSession } from './hooks/useTrainerSession'
@@ -6,6 +7,7 @@ import HomeScreen from './screens/HomeScreen'
 import QuestionScreen from './screens/QuestionScreen'
 import StatsScreen from './screens/StatsScreen'
 import SummaryScreen from './screens/SummaryScreen'
+import { localizeQuestion } from './utils/i18n'
 
 function TrainerApp() {
   const {
@@ -23,13 +25,24 @@ function TrainerApp() {
     actions,
   } = useTrainerSession()
   const showExplain = state.lastView === 'question' || state.lastView === 'explanation'
+  const localizedCurrentQuestion = useMemo(
+    () => (currentQuestion ? localizeQuestion(currentQuestion, state.language) : null),
+    [currentQuestion, state.language],
+  )
+  const localizedQuestions = useMemo(
+    () => (state.lastView === 'summary'
+      ? state.questions.map(question => localizeQuestion(question, state.language))
+      : []),
+    [state.lastView, state.questions, state.language],
+  )
 
   return (
     <div className="app">
       <TopBar
         currentIndex={currentIndex}
-        currentQuestion={currentQuestion}
+        currentQuestion={localizedCurrentQuestion}
         inSession={inSession}
+        language={state.language}
         lastView={state.lastView}
         mode={state.mode}
         progressPct={progressPct}
@@ -44,6 +57,7 @@ function TrainerApp() {
           <HomeScreen
             count={state.count}
             difficulty={state.difficulty}
+            language={state.language}
             mode={state.mode}
             topic={state.topic}
             onChangeField={actions.updateSetupField}
@@ -51,21 +65,23 @@ function TrainerApp() {
           />
         )}
 
-        {state.lastView === 'question' && currentQuestion && (
+        {state.lastView === 'question' && localizedCurrentQuestion && (
           <QuestionScreen
             answer={state.answers[currentIndex]}
-            question={currentQuestion}
+            language={state.language}
+            question={localizedCurrentQuestion}
             onAnswer={actions.handleAnswer}
             onMainMenu={actions.resetToHome}
           />
         )}
 
-        {state.lastView === 'explanation' && currentQuestion && (
+        {state.lastView === 'explanation' && localizedCurrentQuestion && (
           <ExplanationScreen
             answer={currentAnswer}
             explanationHtml={detailedExplanationHtml}
             isLastQuestion={state.questionIndex === state.questions.length - 1}
             isReview={state.reviewIndex != null}
+            language={state.language}
             onContinue={() => {
               if (state.reviewIndex != null) {
                 actions.closeReview()
@@ -74,16 +90,17 @@ function TrainerApp() {
               actions.nextQuestion(false)
             }}
             onMainMenu={actions.resetToHome}
-            question={currentQuestion}
+            question={localizedCurrentQuestion}
           />
         )}
 
         {state.lastView === 'summary' && (
           <SummaryScreen
             answers={state.answers}
-            questions={state.questions}
+            questions={localizedQuestions}
             score={summaryScore}
             accuracy={summaryAccuracy}
+            language={state.language}
             weakTopic={weakTopic}
             onMainMenu={actions.resetToHome}
             onOpenReview={actions.openReviewItem}
@@ -93,12 +110,14 @@ function TrainerApp() {
         {state.lastView === 'stats' && (
           <StatsScreen
             stats={state.stats}
+            language={state.language}
             onMainMenu={actions.resetToHome}
           />
         )}
       </div>
 
       <BottomTabs
+        language={state.language}
         showExplain={showExplain}
         onExplain={actions.openExplanation}
         onReset={actions.resetToHome}
@@ -109,5 +128,7 @@ function TrainerApp() {
 }
 
 export default TrainerApp
+
+
 
 

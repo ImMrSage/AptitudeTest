@@ -138,7 +138,7 @@ export function matchAllNumbers(text) {
             const missingScore = requiredTotal - otherTotal;
             return `
               <div class="formula-block">
-                <div class="formula-line">Required total = ${avg} × ${scores.length} = ${requiredTotal}</div>
+                <div class="formula-line">Required total = ${avg} x ${scores.length} = ${requiredTotal}</div>
                 <div class="formula-line">Other scores = ${otherScores.join(' + ')} = ${otherTotal}</div>
                 <div class="formula-line">${targetName}'s score = ${requiredTotal} - ${otherTotal} = ${missingScore}</div>
               </div>
@@ -180,9 +180,9 @@ export function matchAllNumbers(text) {
 
 
         if (q.variantKey === 'quantitative-comparison') {
-          const aMatch = q.visualHtml.match(/Quantity A: (\d+) × (\d+)/);
-          const hardBMatch = q.visualHtml.match(/Quantity B: \((\d+) \+ (\d+)\) × \((\d+) \+ (\d+)\)/);
-          const simpleBMatch = q.visualHtml.match(/Quantity B: (\d+) × \((\d+) \+ 1\)/);
+          const aMatch = q.visualHtml.match(/Quantity A: (\d+) x (\d+)/);
+          const hardBMatch = q.visualHtml.match(/Quantity B: \((\d+) \+ (\d+)\) x \((\d+) \+ (\d+)\)/);
+          const simpleBMatch = q.visualHtml.match(/Quantity B: (\d+) x \((\d+) \+ 1\)/);
           if (aMatch) {
             const aLeft = Number(aMatch[1]);
             const aRight = Number(aMatch[2]);
@@ -191,14 +191,14 @@ export function matchAllNumbers(text) {
             let formulaB = '';
             if (hardBMatch) {
               valueB = (Number(hardBMatch[1]) + Number(hardBMatch[2])) * (Number(hardBMatch[3]) + Number(hardBMatch[4]));
-              formulaB = `(${hardBMatch[1]} + ${hardBMatch[2]}) × (${hardBMatch[3]} + ${hardBMatch[4]})`;
+              formulaB = `(${hardBMatch[1]} + ${hardBMatch[2]}) x (${hardBMatch[3]} + ${hardBMatch[4]})`;
             } else if (simpleBMatch) {
               valueB = Number(simpleBMatch[1]) * (Number(simpleBMatch[2]) + 1);
-              formulaB = `${simpleBMatch[1]} × (${simpleBMatch[2]} + 1)`;
+              formulaB = `${simpleBMatch[1]} x (${simpleBMatch[2]} + 1)`;
             }
             return `
               <div class="formula-block">
-                <div class="formula-line">Quantity A = ${aLeft} × ${aRight} = ${valueA}</div>
+                <div class="formula-line">Quantity A = ${aLeft} x ${aRight} = ${valueA}</div>
                 <div class="formula-line">Quantity B = ${formulaB} = ${valueB}</div>
                 <div class="formula-line">Compare ${valueA} and ${valueB} to choose the correct relation.</div>
               </div>
@@ -235,7 +235,7 @@ export function matchAllNumbers(text) {
               <div class="formula-block">
                 <div class="formula-line">${mult}x + ${add} = ${total}</div>
                 <div class="formula-line">${mult}x = ${total} - ${add} = ${reduced}</div>
-                <div class="formula-line">x = ${reduced} ÷ ${mult} = ${x}</div>
+                <div class="formula-line">x = ${reduced} / ${mult} = ${x}</div>
               </div>
             `;
           }
@@ -268,7 +268,7 @@ export function matchAllNumbers(text) {
             const end = start + increase;
             return `
               <div class="formula-block">
-                <div class="formula-line">Increase amount = ${start} × ${pct}/100 = ${increase}</div>
+                <div class="formula-line">Increase amount = ${start} x ${pct}/100 = ${increase}</div>
                 <div class="formula-line">New value = ${start} + ${increase} = ${end}</div>
               </div>
             `;
@@ -345,5 +345,6 @@ export function matchAllNumbers(text) {
 
       return '';
     }
+
 
 

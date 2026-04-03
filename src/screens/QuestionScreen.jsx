@@ -1,6 +1,7 @@
 import { renderHtml } from '../utils/renderHtml'
+import { translateUi } from '../utils/i18n'
 
-export default function QuestionScreen({ answer, question, onAnswer, onMainMenu }) {
+export default function QuestionScreen({ answer, language, question, onAnswer, onMainMenu }) {
   return (
     <div className="setup-grid">
       <div className="card">
@@ -32,7 +33,7 @@ export default function QuestionScreen({ answer, question, onAnswer, onMainMenu 
           </div>
         </div>
       </div>
-      <button className="cta" onClick={onMainMenu}>Main menu</button>
+      <button className="cta" onClick={onMainMenu}>{translateUi(language, 'mainMenu')}</button>
     </div>
   )
 }

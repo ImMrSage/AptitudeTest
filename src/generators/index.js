@@ -6,7 +6,7 @@ import { generateConcentration, generateDiagrammatic, generateLogical, generateP
 import { generateQuantitative } from './quantitative'
 import { generateVerbal } from './verbal'
 
-export function generateSession(topic, difficulty, count, mode, lastQuestionTemplateSignature = null) {
+export function generateSession(topic, difficulty, count, mode, lastQuestionTemplateSignature = null, language = 'en') {
   const list = []
   const pool = topic === 'mixed'
     ? ['numerical', 'verbal', 'logical', 'concentration', 'planning', 'quantitative', 'mechanical']
@@ -21,7 +21,7 @@ export function generateSession(topic, difficulty, count, mode, lastQuestionTemp
     const selectedTopic = topic === 'mixed' ? pool[i % pool.length] : pool[0]
     const familyLimit = getFamilyLimit(selectedTopic, difficulty)
     const cooldownWindow = selectedTopic === 'numerical' ? 6 : 2
-    let question = generateQuestion(selectedTopic, difficulty, mode)
+    let question = generateQuestion(selectedTopic, difficulty, mode, language)
     let signature = questionSignature(question)
     let templateSignature = questionTemplateSignature(question)
     let familySignature = questionFamilySignature(question)
@@ -33,7 +33,7 @@ export function generateSession(topic, difficulty, count, mode, lastQuestionTemp
       (usedFamilySignatures.size < familyLimit && usedFamilySignatures.has(familySignature)) ||
       familyHistory.slice(-cooldownWindow).includes(familySignature)
     ); attempt++) {
-      question = generateQuestion(selectedTopic, difficulty, mode)
+      question = generateQuestion(selectedTopic, difficulty, mode, language)
       signature = questionSignature(question)
       templateSignature = questionTemplateSignature(question)
       familySignature = questionFamilySignature(question)
@@ -50,7 +50,7 @@ export function generateSession(topic, difficulty, count, mode, lastQuestionTemp
   return list
 }
 
-export function generateQuestion(topic, difficulty, mode) {
+export function generateQuestion(topic, difficulty, mode, language = 'en') {
   switch (topic) {
     case 'numerical': return generateNumerical(difficulty, mode)
     case 'verbal': return generateVerbal(difficulty, mode)
@@ -76,7 +76,6 @@ export {
   generateVerbal,
   pieSvg,
 }
-
 
 function getFamilyLimit(topic, difficulty) {
   if (topic === 'numerical') {

@@ -85,8 +85,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         visualHtml,
         options: options.map(t => ({ text: t, plain: t })),
         correctIndex,
-        explanation: `Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ñ‡Ð¸Ñ‚Ð°ÐµÐ¼ Ð²Ð¾Ð¿Ñ€Ð¾Ñ: compare January sales profit with wages. ÐÑƒÐ¶Ð½Ñ‹ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ January bars, hours and wage rate. Profit = bar value Ã— scale. Wage = hours Ã— rate. Ð—Ð°Ñ‚ÐµÐ¼ ÑÑ€Ð°Ð²Ð½Ð¸Ð²Ð°ÐµÐ¼ ÐºÐ°Ð¶Ð´Ð¾Ð³Ð¾ Ð¾Ñ‚Ð´ÐµÐ»ÑŒÐ½Ð¾.`,
-        pattern: `Question first â†’ only needed data â†’ one formula per column: profit = units Ã— scale, wage = hours Ã— rate.`
+        explanation: 'Compare January sales profit with wages. Use only the January bars, the monthly hours, and the wage rate. Profit = units x scale. Wage = hours x rate. Then compare each person separately.',
+        pattern: 'Question first -> only needed data -> one formula per person: profit = units x scale, wage = hours x rate.'
       };
     }
 
@@ -266,8 +266,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         visualHtml,
         options: options.map(v => ({ text: `$${v.toLocaleString()}`, plain: `$${v.toLocaleString()}` })),
         correctIndex,
-        explanation: `Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° ÑÑƒÐ¼Ð¼Ð¸Ñ€ÑƒÐµÐ¼ Ð²ÑÐµ bar values, Ð¿Ð¾Ñ‚Ð¾Ð¼ ÑƒÐ¼Ð½Ð¾Ð¶Ð°ÐµÐ¼ Ð½Ð° loans per unit. Ð­Ñ‚Ð¾ Ð´Ð°Ñ‘Ñ‚ total loans. Ð”Ð°Ð»ÐµÐµ Ð±ÐµÑ€Ñ‘Ð¼ 1 Ð¸Ð· ${ratioA}, Ñ‚Ð¾ ÐµÑÑ‚ÑŒ Ð´ÐµÐ»Ð¸Ð¼ Ð½Ð° ${ratioA}. Ð˜ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ð¿Ð¾Ñ‚Ð¾Ð¼ ÑƒÐ¼Ð½Ð¾Ð¶Ð°ÐµÐ¼ Ð½Ð° fine $${fine}.`,
-        pattern: `Multi-step filter: total first â†’ fraction second â†’ money last.`
+        explanation: `Add all bar values first, then multiply by the loans per unit. That gives total loans. Next take 1 in ${ratioA}, so divide by ${ratioA}. Only then multiply by the fine of $${fine}.`,
+        pattern: 'Multi-step filter: total first -> fraction second -> money last.'
       };
     }
 
@@ -414,7 +414,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         visualHtml,
         options: options.map(v => ({ text: `$${Number(v).toFixed(2)}`, plain: `$${Number(v).toFixed(2)}` })),
         correctIndex,
-        explanation: `First find the pre-discount total: ${qty} Ã— $${prices[idx].toFixed(2)}. Then apply the ${discount}% reduction to that total, giving $${total.toFixed(2)}.`,
+        explanation: `First find the pre-discount total: ${qty} x $${prices[idx].toFixed(2)}. Then apply the ${discount}% reduction to that total, giving $${total.toFixed(2)}.`,
         pattern: `Multiply quantity first, apply discount second. Do not subtract the percent as a raw number.`
       };
     }
@@ -452,7 +452,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         options: options.map(v => ({ text: `${v}`, plain: `${v}` })),
         correctIndex,
         explanation: askForNeeded
-          ? `Required total = ${avg} Ã— ${scores.length}. Subtract the other three known scores to find ${names[idx]}'s score: ${needed}.`
+          ? `Required total = ${avg} x ${scores.length}. Subtract the other three known scores to find ${names[idx]}'s score: ${needed}.`
           : `Add all scores and divide by ${scores.length}. That gives an average of ${avg}.`,
         pattern: 'For averages, think in totals first: total sum, then divide, or reverse the process.'
       };
@@ -871,6 +871,9 @@ export function pieSvg(cx, cy, r, percentages, colors) {
     export function askWholeNumber(value) {
       return Math.abs(value - Math.round(value)) < 0.001;
     }
+
+
+
 
 
 

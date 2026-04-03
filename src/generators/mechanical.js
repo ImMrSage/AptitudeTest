@@ -194,7 +194,7 @@ function mechanicalLever(difficulty) {
     explanation: 'A longer effort arm produces a larger moment, so less force is needed to move the load.',
     explanationHtml: `
       <div class="formula-block">
-        <div class="formula-line">Moment = force ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â distance from the pivot</div>
+        <div class="formula-line">Moment = force x distance from the pivot</div>
         <div class="formula-line">Load arm = ${loadArm} units</div>
         <div class="formula-line">Effort arm = ${effortArm} units</div>
         <div class="formula-line">Because the effort arm is longer than the load arm, the lever gives mechanical advantage.</div>
@@ -653,7 +653,7 @@ function mechanicalBoltCutter(difficulty) {
     explanation: 'Long handles increase the distance from the pivot, so the user creates a larger moment and gets greater cutting force at the jaws.',
     explanationHtml: `
       <div class="formula-block">
-        <div class="formula-line">Moment = force ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â distance from the pivot.</div>
+        <div class="formula-line">Moment = force x distance from the pivot.</div>
         <div class="formula-line">Longer handles increase that distance.</div>
         <div class="formula-line">A larger moment at the handles produces a larger cutting force at the jaws.</div>
         <div class="formula-line">That is mechanical advantage.</div>
@@ -754,7 +754,7 @@ function mechanicalHalligan(difficulty) {
     explanation: 'The longest handle gives the greatest lever arm, so it needs the least force to produce the same turning moment on the door.',
     explanationHtml: `
       <div class="formula-block">
-        <div class="formula-line">Moment = force ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â lever arm.</div>
+        <div class="formula-line">Moment = force x lever arm.</div>
         <div class="formula-line">A longer halligan handle means a longer lever arm.</div>
         <div class="formula-line">For the same required turning moment, a longer lever arm needs less input force.</div>
         <div class="formula-line">So tool D requires the least effort.</div>
@@ -1306,6 +1306,7 @@ function jarSvg(cx, scale, hasHoles, label) {
 function oppositeDirection(direction) {
   return direction === 'Clockwise' ? 'Counterclockwise' : 'Clockwise'
 }
+
 
 
 
