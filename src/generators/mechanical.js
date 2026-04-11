@@ -7,6 +7,11 @@ export function generateMechanical(difficulty) {
     'gear',
     'gear-loop',
     'gear-loop',
+    'gear-faster',
+    'gear-removal',
+    'logic-gate',
+    'technical-knowledge',
+    'technical-knowledge',
     'bar-lock',
     'bar-lock',
     'ramp',
@@ -14,6 +19,7 @@ export function generateMechanical(difficulty) {
     'pulley',
     'belt-shaft-speed',
     'belt-shaft-speed',
+    'parallel-resistance',
     'thermal',
     'rope-slip',
     'rope-slip',
@@ -21,6 +27,9 @@ export function generateMechanical(difficulty) {
     'bulb-circuit',
     'bulb-count',
     'bulb-count',
+    'bulb-failure',
+    'dynamo-brightness',
+    'spring-load',
     'buoyancy-tank',
     'bridge-deflection',
     'convex-mirror',
@@ -35,15 +44,23 @@ export function generateMechanical(difficulty) {
   const family = pick(families)
   if (family === 'gear') return mechanicalGear(difficulty)
   if (family === 'gear-loop') return mechanicalGearLoop(difficulty)
+  if (family === 'gear-faster') return mechanicalGearFaster(difficulty)
+  if (family === 'gear-removal') return mechanicalGearRemoval(difficulty)
+  if (family === 'logic-gate') return mechanicalLogicGate(difficulty)
+  if (family === 'technical-knowledge') return mechanicalTechnicalKnowledge(difficulty)
   if (family === 'bar-lock') return mechanicalBarLock(difficulty)
   if (family === 'ramp') return mechanicalRamp(difficulty)
   if (family === 'lever') return mechanicalLever(difficulty)
   if (family === 'pulley') return mechanicalPulley(difficulty)
   if (family === 'belt-shaft-speed') return mechanicalBeltShaftSpeed(difficulty)
+  if (family === 'parallel-resistance') return mechanicalParallelResistance(difficulty)
   if (family === 'thermal') return mechanicalThermal(difficulty)
   if (family === 'rope-slip') return mechanicalRopeSlip(difficulty)
   if (family === 'bulb-circuit') return mechanicalBulbCircuit(difficulty)
   if (family === 'bulb-count') return mechanicalBulbCount(difficulty)
+  if (family === 'bulb-failure') return mechanicalBulbFailure(difficulty)
+  if (family === 'dynamo-brightness') return mechanicalDynamoBrightness(difficulty)
+  if (family === 'spring-load') return mechanicalSpringLoad(difficulty)
   if (family === 'buoyancy-tank') return mechanicalBuoyancyTank(difficulty)
   if (family === 'bridge-deflection') return mechanicalBridgeDeflection(difficulty)
   if (family === 'convex-mirror') return mechanicalConvexMirror(difficulty)
@@ -55,7 +72,6 @@ export function generateMechanical(difficulty) {
   if (family === 'relative-speed') return mechanicalRelativeSpeed(difficulty)
   return mechanicalHalligan(difficulty)
 }
-
 function mechanicalGear(difficulty) {
   const gearCount = difficulty === 'hard' ? pick([3, 4, 5]) : pick([3, 4])
   const labels = ['A', 'B', 'C', 'D', 'E'].slice(0, gearCount)
@@ -205,6 +221,134 @@ function mechanicalLever(difficulty) {
   }
 }
 
+function mechanicalTechnicalKnowledge(difficulty) {
+  const bank = [
+    {
+      key: 'forming-process',
+      prompt: 'Which of the following is not a forming process?',
+      options: ['Bending', 'Welding', 'Rolling', 'Deep drawing', 'None of the answers is correct.'],
+      answer: 'Welding',
+      explanation: 'Forming processes change the shape of a workpiece without joining separate parts. Welding is a joining process, not a forming process.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Bending, rolling and deep drawing all belong to shaping or forming processes.</div>
+          <div class="formula-line">Welding is used to join parts together.</div>
+          <div class="formula-line">So welding is not a forming process.</div>
+        </div>
+      `,
+      pattern: 'Distinguish manufacturing groups: forming changes shape, while welding belongs to joining.',
+    },
+    {
+      key: 'energy-definition',
+      prompt: 'How can energy be defined?',
+      options: [
+        'As work divided by the time needed for it',
+        'As the product of mass and acceleration of a body',
+        'As the ability to do work',
+        'As the time-based change of a body\'s state of motion',
+        'None of the answers is correct.',
+      ],
+      answer: 'As the ability to do work',
+      explanation: 'In basic physics, energy is defined as the capacity or ability to do work.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Work divided by time describes power.</div>
+          <div class="formula-line">Mass times acceleration describes force.</div>
+          <div class="formula-line">Energy is the ability to do work.</div>
+        </div>
+      `,
+      pattern: 'Separate core physics definitions: energy, power and force are different quantities.',
+    },
+    {
+      key: 'detachable-joint',
+      prompt: 'Which of the following is a detachable connection?',
+      options: ['Soldered joint', 'Clamp connection', 'Adhesive bond', 'Welded joint', 'None of the answers is correct.'],
+      answer: 'Clamp connection',
+      explanation: 'A clamp connection can be released again without destroying the joined parts. Soldered, bonded and welded joints are normally non-detachable.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">A detachable connection can be opened again during service.</div>
+          <div class="formula-line">Clamp connections are designed for release.</div>
+          <div class="formula-line">Soldered, bonded and welded joints are usually permanent.</div>
+        </div>
+      `,
+      pattern: 'For connection questions, identify whether the joint is intended to be released or is permanent.',
+    },
+    {
+      key: 'alloy',
+      prompt: 'Which material is an alloy?',
+      options: ['Silver', 'Bronze', 'Gold', 'Aluminium', 'None of the answers is correct.'],
+      answer: 'Bronze',
+      explanation: 'Bronze is an alloy, typically made mainly from copper and tin. The other options are elemental materials in this context.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">An alloy is a metallic material made from at least two elements.</div>
+          <div class="formula-line">Bronze is a copper-based alloy.</div>
+          <div class="formula-line">Silver, gold and aluminium are elemental metals here.</div>
+        </div>
+      `,
+      pattern: 'An alloy is a mixture of elements; common examples include bronze, brass and steel.',
+    },
+    {
+      key: 'conductor',
+      prompt: 'Which material is an electrical conductor?',
+      options: ['Polystyrene', 'Glass', 'Aluminium', 'Germanium', 'None of the answers is correct.'],
+      answer: 'Aluminium',
+      explanation: 'Aluminium is a good electrical conductor. Polystyrene and glass are insulators, while germanium is better classified as a semiconductor.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Metals such as aluminium conduct electric current well.</div>
+          <div class="formula-line">Polystyrene and glass are insulating materials.</div>
+          <div class="formula-line">Germanium is a semiconductor, not the best answer here.</div>
+        </div>
+      `,
+      pattern: 'Classify materials by electrical behavior: conductor, insulator or semiconductor.',
+    },
+    {
+      key: 'reduce-friction',
+      prompt: 'How can friction be reduced most effectively?',
+      options: [
+        'By lubricating the friction surfaces',
+        'By cleaning the friction surfaces',
+        'By drying the friction surfaces',
+        'By moistening the friction surfaces',
+        'None of the answers is correct.',
+      ],
+      answer: 'By lubricating the friction surfaces',
+      explanation: 'Lubrication creates a separating film between surfaces and is the standard way to reduce friction and wear effectively.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Friction is reduced when direct surface contact is lowered.</div>
+          <div class="formula-line">Lubricants create a film between the surfaces.</div>
+          <div class="formula-line">That is why lubrication is the most effective answer.</div>
+        </div>
+      `,
+      pattern: 'In tribology questions, lubrication is the standard method for reducing friction and wear.',
+    },
+  ]
+  const item = pick(bank)
+  const options = item.options.map(value => ({ text: value, plain: value }))
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-technical-knowledge-${item.key}`,
+    familyKey: 'mechanical-technical-knowledge',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: item.prompt,
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Technical knowledge</strong></div>
+        <div class="statement mt12">Choose the best answer from materials, manufacturing and basic physics.</div>
+      </div>
+    `,
+    options,
+    correctIndex: item.options.indexOf(item.answer),
+    explanation: item.explanation,
+    explanationHtml: item.explanationHtml,
+    pattern: item.pattern,
+  }
+}
 function mechanicalPulley(difficulty) {
   const segmentsA = randInt(1, 2)
   const segmentsB = randInt(3, 4)
@@ -1084,6 +1228,478 @@ function mechanicalBulbCount(difficulty) {
   }
 }
 
+function mechanicalLogicGate(difficulty) {
+  const answer = 'Only if A, B and C are active, D is active.'
+  const options = shuffle([
+    'If B and C are active, D is active.',
+    'If A and C are active, D is active.',
+    'If A and B are active, D is active.',
+    answer,
+    'None of the answers is correct.'
+  ])
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-logic-gate',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'A logic gate uses two AND blocks as shown. Which input states make output D active?',
+    visualHtml: `
+      <div class="chart">
+        <svg viewBox="0 0 420 170" width="100%" height="170" style="display:block;margin-top:8px;">
+          <circle cx="48" cy="42" r="16" fill="#e5e7eb" stroke="#475569" stroke-width="2"></circle>
+          <circle cx="48" cy="84" r="16" fill="#e5e7eb" stroke="#475569" stroke-width="2"></circle>
+          <circle cx="48" cy="126" r="16" fill="#e5e7eb" stroke="#475569" stroke-width="2"></circle>
+          <text x="48" y="47" text-anchor="middle" font-size="14" font-weight="700" fill="#111827">A</text>
+          <text x="48" y="89" text-anchor="middle" font-size="14" font-weight="700" fill="#111827">B</text>
+          <text x="48" y="131" text-anchor="middle" font-size="14" font-weight="700" fill="#111827">C</text>
+          <line x1="64" y1="42" x2="132" y2="42" stroke="#475569" stroke-width="4"></line>
+          <line x1="64" y1="84" x2="132" y2="84" stroke="#475569" stroke-width="4"></line>
+          <line x1="64" y1="126" x2="220" y2="126" stroke="#475569" stroke-width="4"></line>
+          <rect x="132" y="22" width="74" height="82" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"></rect>
+          <text x="169" y="72" text-anchor="middle" font-size="32" font-weight="700" fill="#0f172a">&amp;</text>
+          <line x1="206" y1="63" x2="256" y2="63" stroke="#475569" stroke-width="4"></line>
+          <line x1="220" y1="126" x2="256" y2="126" stroke="#475569" stroke-width="4"></line>
+          <rect x="256" y="78" width="74" height="82" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"></rect>
+          <text x="293" y="128" text-anchor="middle" font-size="32" font-weight="700" fill="#0f172a">&amp;</text>
+          <line x1="330" y1="119" x2="372" y2="119" stroke="#475569" stroke-width="4"></line>
+          <circle cx="388" cy="119" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"></circle>
+          <text x="388" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="#111827">D</text>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'The first AND gate needs A and B to be active. Its output then feeds a second AND gate together with C. Therefore D is active only when A, B and C are all active.',
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">First gate output = A AND B</div>
+        <div class="formula-line">Final output D = (A AND B) AND C</div>
+        <div class="formula-line">So D is active only if all three inputs are active.</div>
+      </div>
+    `,
+    pattern: 'For logic-gate diagrams, resolve the gates stage by stage and use the first output as the next input.'
+  }
+}
+
+function mechanicalGearRemoval(difficulty) {
+  const answer = 'Gear 3'
+  const options = shuffle(['Gear 1', 'Gear 2', 'Gear 3', 'Gear 4', 'None of the answers is correct.'])
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-gear-removal',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Gear A is the drive gear. Which gear must be removed so that all remaining gears can rotate?',
+    visualHtml: `
+      <div class="chart">
+        <svg viewBox="0 0 410 250" width="100%" height="230" style="display:block;margin-top:8px;">
+          ${simpleGearSvg('A', 88, 176, 54, '#dbeafe')}
+          ${simpleGearSvg('1', 158, 122, 30, '#e5e7eb')}
+          ${simpleGearSvg('2', 248, 146, 56, '#e5e7eb')}
+          ${simpleGearSvg('3', 230, 64, 36, '#e5e7eb')}
+          ${simpleGearSvg('4', 340, 146, 28, '#e5e7eb')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'Gears 1, 2 and 3 form an odd closed loop. That locks the train because the required directions conflict. Removing Gear 3 breaks that loop and leaves the chain A -> 1 -> 2 -> 4, so the remaining gears can rotate.',
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Odd closed gear loops lock because the direction reversals cannot be satisfied consistently.</div>
+        <div class="formula-line">Gears 1, 2 and 3 create that locking loop.</div>
+        <div class="formula-line">Remove Gear 3 and the remaining gears form one open train.</div>
+      </div>
+    `,
+    pattern: 'If a gear layout contains an odd closed loop, the loop locks. Remove the gear that breaks the odd loop while keeping the rest connected.'
+  }
+}
+
+function mechanicalParallelResistance(difficulty) {
+  const scenarios = [
+    {
+      key: 'four-by-five',
+      count: 4,
+      resistance: 5,
+      options: ['20 ohms', '15 ohms', '10 ohms', '5 ohms', 'None of the answers is correct.'],
+      answer: 'None of the answers is correct.',
+      explanation: 'Four identical 5-ohm resistors in parallel give 5 / 4 = 1.25 ohms, so none of the listed values is correct.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">For n identical resistors in parallel: R_total = R / n</div>
+          <div class="formula-line">R_total = 5 / 4 = 1.25 ohms</div>
+        </div>
+      `,
+    },
+    {
+      key: 'two-by-ten',
+      count: 2,
+      resistance: 10,
+      options: ['20 ohms', '15 ohms', '10 ohms', '5 ohms', 'None of the answers is correct.'],
+      answer: '5 ohms',
+      explanation: 'Two identical 10-ohm resistors in parallel halve the resistance, so the total resistance is 5 ohms.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">R_total = 10 / 2 = 5 ohms</div>
+        </div>
+      `,
+    },
+    {
+      key: 'three-by-six',
+      count: 3,
+      resistance: 6,
+      options: ['18 ohms', '12 ohms', '6 ohms', '2 ohms', 'None of the answers is correct.'],
+      answer: '2 ohms',
+      explanation: 'Three identical 6-ohm resistors in parallel give 6 / 3 = 2 ohms.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">R_total = 6 / 3 = 2 ohms</div>
+        </div>
+      `,
+    }
+  ]
+  const scenario = pick(scenarios)
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-parallel-resistance-${scenario.key}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'What is the total resistance of the circuit shown?',
+    visualHtml: `
+      <div class="chart">
+        <svg viewBox="0 0 420 230" width="100%" height="220" style="display:block;margin-top:8px;">
+          ${parallelResistanceSvg(scenario.count, scenario.resistance)}
+        </svg>
+      </div>
+    `,
+    options: scenario.options.map(value => ({ text: value, plain: value })),
+    correctIndex: scenario.options.indexOf(scenario.answer),
+    explanation: scenario.explanation,
+    explanationHtml: scenario.explanationHtml,
+    pattern: 'For identical resistors in parallel, the total resistance is the single resistance divided by the number of parallel branches.'
+  }
+}
+
+function mechanicalBulbFailure(difficulty) {
+  const scenarios = [
+    {
+      key: 'bulb-2-fails',
+      prompt: 'In the circuit shown, bulbs 1, 2, 3 and 4 are lit. What happens if bulb 2 fails and goes out?',
+      answer: 'Bulbs 3 and 4 also go out.',
+      options: [
+        'Bulbs 1, 3 and 4 also go out.',
+        'Bulbs 3 and 4 glow brighter than before.',
+        'Bulbs 1, 3 and 4 continue to glow unchanged.',
+        'Bulbs 3 and 4 also go out.',
+        'None of the answers is correct.'
+      ],
+      visualHtml: `
+        <div class="chart">
+          <svg viewBox="0 0 430 240" width="100%" height="225" style="display:block;margin-top:8px;">
+            ${bulbFailureSeriesSvg()}
+          </svg>
+        </div>
+      `,
+      explanation: 'Bulb 2 sits in the top supply path feeding the branches for bulbs 3 and 4. When bulb 2 fails, that part of the circuit opens, so bulbs 3 and 4 lose power. Bulb 1 is still connected across the supply and remains lit.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Bulb 2 is on the supply path to bulbs 3 and 4.</div>
+          <div class="formula-line">If bulb 2 fails, the top rail is broken beyond that point.</div>
+          <div class="formula-line">Bulbs 3 and 4 no longer lie on a closed loop, so they go out.</div>
+        </div>
+      `,
+    },
+    {
+      key: 'bulb-1-fails',
+      prompt: 'In the circuit shown, bulbs are lit. What happens if bulb 1 fails and goes out?',
+      answer: 'Only bulb 4 also goes out.',
+      options: [
+        'Only bulb 4 also goes out.',
+        'Bulbs 4, 5 and 6 glow especially brightly.',
+        'All the other lit bulbs continue glowing.',
+        'All the lit bulbs go out.',
+        'None of the answers is correct.'
+      ],
+      visualHtml: `
+        <div class="chart">
+          <svg viewBox="0 0 430 255" width="100%" height="235" style="display:block;margin-top:8px;">
+            ${bulbFailureBranchSvg()}
+          </svg>
+        </div>
+      `,
+      explanation: 'Bulb 1 and bulb 4 share the same left branch. If bulb 1 fails, that branch opens and bulb 4 also loses its path. The branches for bulbs 2, 3, 5 and 6 still have complete loops and stay lit.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Bulbs 1 and 4 are on the same branch segment.</div>
+          <div class="formula-line">An open bulb breaks that branch only.</div>
+          <div class="formula-line">The other branches still connect top to bottom, so only bulb 4 also goes out.</div>
+        </div>
+      `,
+    }
+  ]
+  const scenario = pick(scenarios)
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bulb-failure-${scenario.key}`,
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: scenario.prompt,
+    visualHtml: scenario.visualHtml,
+    options: scenario.options.map(value => ({ text: value, plain: value })),
+    correctIndex: scenario.options.indexOf(scenario.answer),
+    explanation: scenario.explanation,
+    explanationHtml: scenario.explanationHtml,
+    pattern: 'Treat a failed bulb as an open circuit. Then identify which branches still form a closed electrical loop.'
+  }
+}
+
+function mechanicalDynamoBrightness(difficulty) {
+  const answer = 'Max Meyer\'s lamp shines brightest.'
+  const options = shuffle([
+    'Mr Meyer\'s lamp shines brightest.',
+    'Mrs Meyer\'s lamp shines brightest.',
+    answer,
+    'At the same riding speed, all lamps shine equally brightly.',
+    'None of the answers is correct.'
+  ])
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-dynamo-brightness',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'The Meyer family are cycling home. It is getting dark and everyone switches on a bottle dynamo. Whose lamp shines brightest if all ride at the same speed and their lighting systems are identical?',
+    visualHtml: `
+      <div class="chart">
+        <svg viewBox="0 0 520 220" width="100%" height="210" style="display:block;margin-top:8px;">
+          ${dynamoBikeSvg(90, 160, 0.72, 'Max')}
+          ${dynamoBikeSvg(255, 160, 1.02, 'Mrs Meyer')}
+          ${dynamoBikeSvg(420, 160, 0.92, 'Mr Meyer')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'At the same forward speed, the smaller wheel turns faster. A bottle dynamo driven by the faster-spinning wheel also turns faster, so the smallest bicycle wheel produces the brightest lamp.',
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Wheel angular speed increases when wheel radius gets smaller.</div>
+        <div class="formula-line">The bottle dynamo is driven by wheel rotation.</div>
+        <div class="formula-line">So the smallest bicycle wheel gives the brightest lamp.</div>
+      </div>
+    `,
+    pattern: 'At the same travel speed, smaller wheels rotate faster. Any dynamo linked to wheel rotation will also run faster.'
+  }
+}
+
+function mechanicalSpringLoad(difficulty) {
+  const answer = 'The springs 1-5'
+  const options = shuffle([
+    'The springs 6-10',
+    answer,
+    'The springs 3, 4 and 5',
+    'The springs 1 and 2',
+    'None of the answers is correct.'
+  ])
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-spring-load',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'In a spring system identical metal balls are suspended. Which of the massless springs are stretched the most?',
+    visualHtml: `
+      <div class="chart">
+        <svg viewBox="0 0 520 285" width="100%" height="255" style="display:block;margin-top:8px;">
+          ${springLoadDiagramSvg()}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'Each top spring 1-5 supports its own ball and the full weight hanging below through the lower spring. Each lower spring 6-10 supports only one ball. Therefore springs 1-5 are stretched the most.',
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Springs 6-10 each carry one ball.</div>
+        <div class="formula-line">Springs 1-5 each carry two-ball weight: their own ball plus the lower hanging section.</div>
+        <div class="formula-line">Greater force means greater extension, so springs 1-5 stretch most.</div>
+      </div>
+    `,
+    pattern: 'For identical springs, the spring carrying the greatest force stretches the most. Trace the total hanging load below each spring.'
+  }
+}
+
+function mechanicalGearFaster(difficulty) {
+  const answer = 'Gear 3'
+  const options = shuffle(['Gear 2', 'Gear 3', 'Gear 4', 'Gear 5', 'None of the answers is correct.'])
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-gear-faster',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which gear turns faster than gear 1?',
+    visualHtml: `
+      <div class="chart">
+        <svg viewBox="0 0 420 245" width="100%" height="225" style="display:block;margin-top:8px;">
+          ${simpleGearSvg('1', 204, 126, 30, '#dbeafe')}
+          ${simpleGearSvg('2', 76, 126, 44, '#e5e7eb')}
+          ${simpleGearSvg('', 136, 126, 14, '#f3f4f6')}
+          ${simpleGearSvg('3', 204, 48, 18, '#e5e7eb')}
+          ${simpleGearSvg('', 204, 86, 12, '#f3f4f6')}
+          ${simpleGearSvg('4', 322, 126, 42, '#e5e7eb')}
+          ${simpleGearSvg('', 272, 126, 20, '#f3f4f6')}
+          ${simpleGearSvg('5', 204, 212, 30, '#e5e7eb')}
+          ${simpleGearSvg('', 204, 174, 12, '#f3f4f6')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'Idler gears only transfer motion and change direction; they do not change the speed ratio. Gear 3 is smaller than gear 1, so it turns faster. Gears 2 and 4 are larger, and gear 5 is the same size.',
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Smaller driven gear -> higher rotational speed.</div>
+        <div class="formula-line">Equal-sized gears -> equal speed.</div>
+        <div class="formula-line">Larger driven gear -> lower speed.</div>
+      </div>
+    `,
+    pattern: 'Compare the size of the target gear with gear 1. Idlers change direction only; they do not change the speed ratio.'
+  }
+}
+
+function simpleGearSvg(label, x, y, r, fill) {
+  return `
+    <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="#4b5563" stroke-width="3"></circle>
+    <circle cx="${x}" cy="${y}" r="${Math.max(5, Math.round(r * 0.18))}" fill="#f8fafc" stroke="#6b7280" stroke-width="2"></circle>
+    ${label ? `<text x="${x}" y="${y + 6}" text-anchor="middle" font-size="${Math.max(16, Math.round(r * 0.5))}" font-weight="700" fill="#111827">${label}</text>` : ''}
+  `
+}
+
+function parallelResistanceSvg(count, resistance) {
+  const branches = Array.from({ length: count }, (_, index) => {
+    const y = 40 + index * 46
+    return `
+      <line x1="52" y1="${y}" x2="150" y2="${y}" stroke="#374151" stroke-width="4"></line>
+      <rect x="150" y="${y - 14}" width="72" height="28" rx="14" fill="#f8fafc" stroke="#374151" stroke-width="3"></rect>
+      <text x="186" y="${y + 6}" text-anchor="middle" font-size="18" font-weight="700" fill="#111827">${resistance} O</text>
+      <line x1="222" y1="${y}" x2="334" y2="${y}" stroke="#374151" stroke-width="4"></line>
+    `
+  }).join('')
+
+  return `
+    <line x1="52" y1="26" x2="52" y2="${40 + (count - 1) * 46 + 14}" stroke="#374151" stroke-width="4"></line>
+    <line x1="334" y1="26" x2="334" y2="${40 + (count - 1) * 46 + 14}" stroke="#374151" stroke-width="4"></line>
+    ${branches}
+    <circle cx="52" cy="113" r="5" fill="#111827"></circle>
+    <circle cx="334" cy="113" r="5" fill="#111827"></circle>
+  `
+}
+
+function bulbFailureSeriesSvg() {
+  const bulb = (cx, cy, label) => `
+    <circle cx="${cx}" cy="${cy}" r="18" fill="#fef3c7" stroke="#92400e" stroke-width="3"></circle>
+    <text x="${cx - 28}" y="${cy - 16}" text-anchor="middle" font-size="16" font-weight="700" fill="#111827">${label}</text>
+  `
+
+  return `
+    <line x1="50" y1="36" x2="340" y2="36" stroke="#374151" stroke-width="4"></line>
+    <line x1="50" y1="184" x2="340" y2="184" stroke="#374151" stroke-width="4"></line>
+    <line x1="50" y1="36" x2="50" y2="184" stroke="#374151" stroke-width="4"></line>
+    <line x1="120" y1="36" x2="120" y2="184" stroke="#374151" stroke-width="4"></line>
+    <line x1="210" y1="36" x2="210" y2="184" stroke="#374151" stroke-width="4"></line>
+    <line x1="300" y1="36" x2="300" y2="184" stroke="#374151" stroke-width="4"></line>
+    <line x1="50" y1="20" x2="50" y2="36" stroke="#111827" stroke-width="4"></line>
+    <line x1="62" y1="18" x2="62" y2="38" stroke="#111827" stroke-width="2"></line>
+    <rect x="156" y="18" width="48" height="36" rx="18" fill="#fef3c7" stroke="#92400e" stroke-width="3"></rect>
+    <text x="180" y="42" text-anchor="middle" font-size="16" font-weight="700" fill="#111827">2</text>
+    ${bulb(120, 104, '1')}
+    ${bulb(210, 104, '3')}
+    ${bulb(300, 104, '4')}
+  `
+}
+
+function bulbFailureBranchSvg() {
+  const bulb = (cx, cy, label) => `
+    <circle cx="${cx}" cy="${cy}" r="17" fill="#fef3c7" stroke="#92400e" stroke-width="3"></circle>
+    <text x="${cx - 25}" y="${cy - 16}" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">${label}</text>
+  `
+
+  return `
+    <line x1="42" y1="38" x2="360" y2="38" stroke="#374151" stroke-width="4"></line>
+    <line x1="42" y1="210" x2="360" y2="210" stroke="#374151" stroke-width="4"></line>
+    <line x1="42" y1="38" x2="42" y2="210" stroke="#374151" stroke-width="4"></line>
+    <line x1="42" y1="22" x2="42" y2="38" stroke="#111827" stroke-width="4"></line>
+    <line x1="54" y1="20" x2="54" y2="40" stroke="#111827" stroke-width="2"></line>
+    <line x1="120" y1="38" x2="120" y2="130" stroke="#374151" stroke-width="4"></line>
+    <line x1="210" y1="38" x2="210" y2="130" stroke="#374151" stroke-width="4"></line>
+    <line x1="300" y1="38" x2="300" y2="130" stroke="#374151" stroke-width="4"></line>
+    <line x1="120" y1="130" x2="300" y2="130" stroke="#374151" stroke-width="4"></line>
+    <line x1="120" y1="130" x2="120" y2="210" stroke="#374151" stroke-width="4"></line>
+    <line x1="210" y1="130" x2="210" y2="210" stroke="#374151" stroke-width="4"></line>
+    <line x1="300" y1="130" x2="300" y2="210" stroke="#374151" stroke-width="4"></line>
+    ${bulb(120, 86, '1')}
+    ${bulb(210, 86, '2')}
+    ${bulb(300, 86, '3')}
+    ${bulb(120, 170, '4')}
+    ${bulb(210, 170, '5')}
+    ${bulb(300, 170, '6')}
+  `
+}
+
+function dynamoBikeSvg(cx, baselineY, scale, label) {
+  const rearR = Math.round(28 * scale)
+  const frontR = Math.round(26 * scale)
+  const wheelY = baselineY - rearR
+  const frameY = wheelY - Math.round(24 * scale)
+  return `
+    <circle cx="${cx - 30 * scale}" cy="${wheelY}" r="${rearR}" fill="none" stroke="#374151" stroke-width="3"></circle>
+    <circle cx="${cx + 34 * scale}" cy="${wheelY}" r="${frontR}" fill="none" stroke="#374151" stroke-width="3"></circle>
+    <line x1="${cx - 30 * scale}" y1="${wheelY}" x2="${cx}" y2="${frameY}" stroke="#111827" stroke-width="3"></line>
+    <line x1="${cx}" y1="${frameY}" x2="${cx + 18 * scale}" y2="${wheelY - 8 * scale}" stroke="#111827" stroke-width="3"></line>
+    <line x1="${cx + 18 * scale}" y1="${wheelY - 8 * scale}" x2="${cx - 6 * scale}" y2="${wheelY - 2 * scale}" stroke="#111827" stroke-width="3"></line>
+    <line x1="${cx - 6 * scale}" y1="${wheelY - 2 * scale}" x2="${cx - 30 * scale}" y2="${wheelY}" stroke="#111827" stroke-width="3"></line>
+    <line x1="${cx}" y1="${frameY}" x2="${cx + 40 * scale}" y2="${frameY - 12 * scale}" stroke="#111827" stroke-width="3"></line>
+    <line x1="${cx + 38 * scale}" y1="${frameY - 12 * scale}" x2="${cx + 52 * scale}" y2="${frameY - 18 * scale}" stroke="#111827" stroke-width="3"></line>
+    <circle cx="${cx + 22 * scale}" cy="${wheelY - 18 * scale}" r="${Math.max(4, Math.round(4 * scale))}" fill="#111827"></circle>
+    <line x1="${cx + 22 * scale}" y1="${wheelY - 18 * scale}" x2="${cx + 26 * scale}" y2="${wheelY - frontR}" stroke="#111827" stroke-width="3"></line>
+    <circle cx="${cx + 52 * scale}" cy="${frameY - 18 * scale}" r="${Math.max(5, Math.round(5 * scale))}" fill="#fef3c7" stroke="#92400e" stroke-width="2"></circle>
+    <text x="${cx}" y="${baselineY + 24}" text-anchor="middle" font-size="14" font-weight="600" fill="#111827">${label}</text>
+  `
+}
+
+function springElementSvg(cx, topY, bottomY, label, drawBall) {
+  const segments = 7
+  const step = (bottomY - topY - 20) / segments
+  let d = `M ${cx} ${topY}`
+  for (let index = 0; index < segments; index += 1) {
+    const y = topY + 10 + index * step
+    const x = cx + (index % 2 === 0 ? -8 : 8)
+    d += ` L ${x} ${y}`
+  }
+  d += ` L ${cx} ${bottomY - 10}`
+  return `
+    <text x="${cx - 18}" y="${topY + 16}" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">${label}</text>
+    <line x1="${cx}" y1="${topY - 10}" x2="${cx}" y2="${topY}" stroke="#374151" stroke-width="3"></line>
+    <path d="${d}" fill="none" stroke="#64748b" stroke-width="3"></path>
+    <line x1="${cx}" y1="${bottomY - 10}" x2="${cx}" y2="${bottomY}" stroke="#374151" stroke-width="3"></line>
+    ${drawBall ? `<circle cx="${cx}" cy="${bottomY + 22}" r="18" fill="#111827"></circle>` : ''}
+  `
+}
+
+function springLoadDiagramSvg() {
+  const top = [90, 170, 250, 330, 410].map((x, index) => springElementSvg(x, 28, 88, String(index + 1), true)).join('')
+  const bottom = [90, 170, 250, 330, 410].map((x, index) => springElementSvg(x, 136, 196, String(index + 6), true)).join('')
+  return `
+    <line x1="48" y1="18" x2="452" y2="18" stroke="#374151" stroke-width="4"></line>
+    ${top}
+    ${bottom}
+  `
+}
 function barLockDiagramSvg(blockingLabel) {
   const wedges = {
     1: { x: blockingLabel === '1' ? 270 : 244, y: 58 },
@@ -1306,6 +1922,7 @@ function jarSvg(cx, scale, hasHoles, label) {
 function oppositeDirection(direction) {
   return direction === 'Clockwise' ? 'Counterclockwise' : 'Clockwise'
 }
+
 
 
 

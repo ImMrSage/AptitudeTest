@@ -213,15 +213,19 @@ export function diagShading(difficulty) {
 
 export function generateLogical(difficulty) {
   const types = difficulty === 'easy'
-    ? ['symmetry', 'code-switch', 'code-switch']
+    ? ['symmetry', 'code-switch', 'code-switch', 'number-series']
     : difficulty === 'medium'
-    ? ['symmetry', 'code-switch', 'code-switch', 'code-switch']
-    : ['symmetry', 'matrix', 'code-switch', 'code-switch', 'code-switch', 'code-switch']
+    ? ['symmetry', 'code-switch', 'code-switch', 'code-switch', 'number-series', 'surface-count']
+    : ['symmetry', 'matrix', 'code-switch', 'code-switch', 'code-switch', 'number-series', 'number-series', 'surface-count', 'surface-count']
   const type = pick(types)
   const question = type === 'symmetry'
     ? logicalSymmetry(difficulty)
     : type === 'matrix'
     ? logicalMatrix(difficulty)
+    : type === 'number-series'
+    ? logicalNumberSeries(difficulty)
+    : type === 'surface-count'
+    ? logicalSurfaceCount(difficulty)
     : logicalCodeSwitch(difficulty)
 
   return {
@@ -231,7 +235,7 @@ export function generateLogical(difficulty) {
     variantKey: `logical-${question.variantKey || question.prompt}`,
     timer: getTimerSeconds('logical', difficulty),
     explanation: question.explanation,
-    pattern: 'Look for the transformation rule between figures: rotation, position, count, alternation, shading, or coded reordering.',
+    pattern: question.pattern || 'Look for the transformation rule between figures: rotation, position, count, alternation, shading, coded reordering, sequence rules, or spatial structure.',
   }
 }
 
@@ -376,6 +380,354 @@ export function logicalCodeSwitch(difficulty) {
   }
 }
 
+function logicalNumberSeries(difficulty) {
+  const scenarios = [
+    {
+      key: 'times-minus',
+      series: [15, 30, 25, 75, 70, 280],
+      answer: '275',
+      options: ['550', '360', '140', '275', 'None of the answers is correct.'],
+      explanation: 'The rule alternates between multiplying by an increasing number and subtracting 5: ×2, -5, ×3, -5, ×4, -5. So after 280 the next value is 275.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">15 × 2 = 30</div>
+          <div class="formula-line">30 - 5 = 25</div>
+          <div class="formula-line">25 × 3 = 75</div>
+          <div class="formula-line">75 - 5 = 70</div>
+          <div class="formula-line">70 × 4 = 280</div>
+          <div class="formula-line">280 - 5 = 275</div>
+        </div>
+      `,
+    },
+    {
+      key: 'triplet-columns',
+      series: [1, 9, 5, 18, 26, 5, 35, 43, 5],
+      answer: '52',
+      options: ['52', '87', '55.5', '91', 'None of the answers is correct.'],
+      explanation: 'Read the series in three interleaved columns. First column is 1, 18, 35, ... and increases by 17 each time. So the next number is 52.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Column 1: 1, 18, 35, ...</div>
+          <div class="formula-line">Each step in that column adds 17.</div>
+          <div class="formula-line">35 + 17 = 52</div>
+        </div>
+      `,
+    },
+    {
+      key: 'descending-cubes',
+      series: [216, 125, 64, 27, 8],
+      answer: '1',
+      options: ['4', '11', '1', '0', 'None of the answers is correct.'],
+      explanation: 'These are descending cubes: 6^3, 5^3, 4^3, 3^3, 2^3. The next value is 1^3 = 1.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">216 = 6³</div>
+          <div class="formula-line">125 = 5³</div>
+          <div class="formula-line">64 = 4³</div>
+          <div class="formula-line">27 = 3³</div>
+          <div class="formula-line">8 = 2³</div>
+          <div class="formula-line">Next: 1³ = 1</div>
+        </div>
+      `,
+    }
+  ]
+  const scenario = pick(scenarios)
+  const sequenceHtml = scenario.series.map(value => `<div class="diagram-cell" style="min-height:54px;font-size:28px;">${value}</div>`).join('')
+  const options = shuffle([...scenario.options])
+
+  return {
+    topic: 'logical',
+    topicLabel: LOGICAL_TOPIC_LABEL,
+    variantKey: `number-series-${scenario.key}`,
+    timer: getTimerSeconds('logical', difficulty),
+    prompt: 'Which number logically continues the number series?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Number series</strong></div>
+        <div class="diagram-grid" style="grid-template-columns:repeat(${scenario.series.length + 1}, 1fr);max-width:760px;">
+          ${sequenceHtml}
+          <div class="diagram-cell missing" style="min-height:54px;font-size:28px;">?</div>
+        </div>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.explanation,
+    explanationHtml: scenario.explanationHtml,
+    pattern: 'For number-series questions, test alternating operations, interleaved sub-series, powers, and repeated increments before assuming one single linear rule.',
+  }
+}
+
+function logicalSurfaceCount(difficulty) {
+  const scenarios = [
+    {
+      key: 'square-tube',
+      answer: '10',
+      options: ['8', '9', '10', '12', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: squareTubeSvg(),
+      explanation: 'This is a square tube, not a solid block. Count the 4 outer side faces, the 4 inner tunnel faces, and the 2 ring-shaped end faces. That gives 10 faces in total.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Outer side faces = 4</div>
+          <div class="formula-line">Inner tunnel faces = 4</div>
+          <div class="formula-line">End faces = 2</div>
+          <div class="formula-line">Total = 4 + 4 + 2 = 10 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'triangle-prism',
+      answer: '5',
+      options: ['4', '5', '6', '7', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('96,132 128,72 162,132', 18, -30),
+      explanation: 'The front outline is a triangle. A triangular prism has 3 side faces and 2 end faces, so it has 5 faces in total.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 3</div>
+          <div class="formula-line">Prism faces = 3 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 5 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'trapezoid-prism',
+      answer: '6',
+      options: ['5', '6', '7', '8', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('78,126 100,80 156,80 178,126', -30, -14),
+      explanation: 'The front outline is a 4-sided shape. A prism with a 4-sided base has 4 side faces plus 2 end faces, so it has 6 faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 4</div>
+          <div class="formula-line">Prism faces = 4 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 6 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'house-prism',
+      answer: '7',
+      options: ['6', '7', '8', '9', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('70,130 70,88 102,56 150,56 182,88 182,130', -18, -28),
+      explanation: 'The front face is a pentagon. A prism with a 5-sided base has 5 side faces plus 2 end faces, so it has 7 faces in total.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Base shape: pentagon = 5 sides</div>
+          <div class="formula-line">Prism faces = 5 rectangular side faces + 2 end faces</div>
+          <div class="formula-line">Total = 7 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'notched-prism',
+      answer: '9',
+      options: ['8', '9', '10', '11', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('72,126 72,84 100,58 172,58 172,96 146,96 146,126', 30, -12),
+      explanation: 'The front outline has 7 edges. A prism based on a 7-sided outline has 7 side faces and 2 end faces, so the body has 9 faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 7</div>
+          <div class="formula-line">Prism faces = 7 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 9 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'hex-prism-pyramid',
+      answer: '13',
+      options: ['11', '12', '13', '14', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismPyramidSvg(6),
+      explanation: 'Break the solid into two joined parts: a hexagonal prism on top and a hexagonal pyramid below. The join is internal, so count only the top hexagon, 6 prism side faces, and 6 triangular pyramid faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Top face = 1 hexagon</div>
+          <div class="formula-line">Prism side faces = 6</div>
+          <div class="formula-line">Pyramid side faces = 6</div>
+          <div class="formula-line">Shared hexagonal join is internal, so do not count it</div>
+          <div class="formula-line">Total = 1 + 6 + 6 = 13 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'hex-prism',
+      answer: '8',
+      options: ['7', '8', '9', '10', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('86,120 66,92 86,64 138,64 158,92 138,120', -28, -12),
+      explanation: 'The base is a hexagon. A hexagonal prism has 6 rectangular side faces and 2 hexagonal end faces, so it has 8 faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Base shape: hexagon = 6 sides</div>
+          <div class="formula-line">Prism faces = 6 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 8 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'slanted-hex-prism',
+      answer: '8',
+      options: ['7', '8', '9', '10', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('78,118 100,78 152,78 174,98 152,138 100,138', 14, -30),
+      explanation: 'The front outline has 6 edges. A prism with a 6-sided base has 6 side faces and 2 end faces, giving 8 faces in total.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 6</div>
+          <div class="formula-line">Prism faces = 6 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 8 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'arrow-prism',
+      answer: '9',
+      options: ['7', '8', '9', '10', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('74,110 112,76 112,92 164,92 164,128 112,128 112,144', -26, -16),
+      explanation: 'The front outline has 7 edges. A prism based on a 7-sided outline has 7 side faces and 2 end faces, so the solid has 9 faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 7</div>
+          <div class="formula-line">Prism faces = 7 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 9 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'concave-step-prism',
+      answer: '10',
+      options: ['8', '9', '10', '11', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('78,138 78,82 110,82 110,56 158,56 158,104 132,104 132,138', 32, -10),
+      explanation: 'The front outline has 8 edges. A prism built from an 8-sided outline has 8 side faces and 2 end faces, so the solid has 10 faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 8</div>
+          <div class="formula-line">Prism faces = 8 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 10 faces</div>
+        </div>
+      `,
+    },
+    {
+      key: 'octagon-prism',
+      answer: '10',
+      options: ['7', '8', '9', '10', 'None of the answers is correct.'],
+      title: 'Spatial understanding',
+      svg: prismSvg('88,126 68,106 68,82 88,62 144,62 164,82 164,106 144,126', -20, -18),
+      explanation: 'The front outline has 8 edges. A prism with an 8-sided base has 8 side faces plus 2 end faces, so it has 10 faces.',
+      explanationHtml: `
+        <div class="formula-block">
+          <div class="formula-line">Front outline sides = 8</div>
+          <div class="formula-line">Prism faces = 8 side faces + 2 end faces</div>
+          <div class="formula-line">Total = 10 faces</div>
+        </div>
+      `,
+    },
+  ]
+  const scenario = pick(scenarios)
+  const options = shuffle([...scenario.options])
+
+  return {
+    topic: 'logical',
+    topicLabel: LOGICAL_TOPIC_LABEL,
+    variantKey: `surface-count-${scenario.key}`,
+    timer: getTimerSeconds('logical', difficulty),
+    prompt: 'How many faces does the solid shown have?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>${scenario.title}</strong></div>
+        <svg viewBox="0 0 260 210" width="100%" height="220" style="display:block;margin-top:8px;max-width:320px;margin-left:auto;margin-right:auto;">
+          ${scenario.svg}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.explanation,
+    explanationHtml: scenario.explanationHtml,
+    pattern: 'For spatial face-count tasks, first identify whether the body is a prism, a hollow tube, or a composite solid. Count outer faces systematically, add any interior tunnel faces, and do not count shared internal joins.',
+  }
+}
+
+function prismSvg(frontPoints, dx, dy) {
+  const points = frontPoints.split(' ').map(point => point.split(',').map(Number))
+  const shifted = points.map(([x, y]) => [x + dx, y + dy])
+  const allX = [...points.map(([x]) => x), ...shifted.map(([x]) => x)]
+  const allY = [...points.map(([, y]) => y), ...shifted.map(([, y]) => y)]
+  const minX = Math.min(...allX)
+  const maxX = Math.max(...allX)
+  const minY = Math.min(...allY)
+  const maxY = Math.max(...allY)
+  const offsetX = 130 - ((minX + maxX) / 2)
+  const offsetY = 102 - ((minY + maxY) / 2)
+  const frontPointsShifted = points.map(([x, y]) => [x + offsetX, y + offsetY])
+  const backPointsShifted = shifted.map(([x, y]) => [x + offsetX, y + offsetY])
+  const backPoints = backPointsShifted.map(([x, y]) => `${x},${y}`).join(' ')
+  const front = frontPointsShifted.map(([x, y]) => `${x},${y}`).join(' ')
+  const connectors = frontPointsShifted.map(([x, y], index) => `<line x1="${x}" y1="${y}" x2="${backPointsShifted[index][0]}" y2="${backPointsShifted[index][1]}" stroke="#64748b" stroke-width="2"></line>`).join('')
+  return `
+    <polygon points="${backPoints}" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
+    ${connectors}
+    <polygon points="${front}" fill="#e5e7eb" stroke="#111827" stroke-width="2.2"></polygon>
+  `
+}
+
+function squareTubeSvg() {
+  const outerFront = '72,68 144,68 144,140 72,140'
+  const outerBack = '98,50 170,50 170,122 98,122'
+  const innerFront = '94,90 122,90 122,118 94,118'
+  const innerBack = '120,72 148,72 148,100 120,100'
+
+  return `
+    <polygon points="${outerBack}" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
+    <polygon points="${innerBack}" fill="#ffffff" stroke="#64748b" stroke-width="2"></polygon>
+
+    <line x1="72" y1="68" x2="98" y2="50" stroke="#64748b" stroke-width="2"></line>
+    <line x1="144" y1="68" x2="170" y2="50" stroke="#64748b" stroke-width="2"></line>
+    <line x1="144" y1="140" x2="170" y2="122" stroke="#64748b" stroke-width="2"></line>
+    <line x1="72" y1="140" x2="98" y2="122" stroke="#64748b" stroke-width="2"></line>
+
+    <line x1="94" y1="90" x2="120" y2="72" stroke="#64748b" stroke-width="2"></line>
+    <line x1="122" y1="90" x2="148" y2="72" stroke="#64748b" stroke-width="2"></line>
+    <line x1="122" y1="118" x2="148" y2="100" stroke="#64748b" stroke-width="2"></line>
+    <line x1="94" y1="118" x2="120" y2="100" stroke="#64748b" stroke-width="2"></line>
+
+    <polygon points="${outerFront}" fill="#e5e7eb" stroke="#111827" stroke-width="2.2"></polygon>
+    <polygon points="${innerFront}" fill="#ffffff" stroke="#111827" stroke-width="2.2"></polygon>
+  `
+}
+
+function prismPyramidSvg(sideCount) {
+  if (sideCount !== 6) return ''
+
+  return `
+    <polygon points="96,58 114,40 146,40 164,58 150,78 110,78" fill="#e5e7eb" stroke="#111827" stroke-width="2.2"></polygon>
+
+    <polygon points="96,58 110,78 110,108 94,88" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
+    <polygon points="164,58 150,78 150,108 166,88" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
+    <polygon points="110,78 150,78 150,108 110,108" fill="#eef2f7" stroke="#64748b" stroke-width="2"></polygon>
+
+    <polygon points="94,88 110,108 130,174" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
+    <polygon points="110,108 150,108 130,174" fill="#ffffff" stroke="#64748b" stroke-width="2"></polygon>
+    <polygon points="150,108 166,88 130,174" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
+
+  `
+}
+
+function regularPolygonPoints(cx, cy, rx, ry, sides, rotation = 0) {
+  return Array.from({ length: sides }, (_, index) => {
+    const angle = rotation + (Math.PI * 2 * index) / sides
+    return [
+      Math.round((cx + rx * Math.cos(angle)) * 10) / 10,
+      Math.round((cy + ry * Math.sin(angle)) * 10) / 10,
+    ]
+  })
+}
 function buildPermutationCodes() {
   const digits = ['1', '2', '3', '4']
   const results = []
@@ -487,6 +839,12 @@ export function generateConcentration(difficulty) {
 }
 
 export function generatePlanning(difficulty) {
+  const family = pick(['timeline', 'timeline', 'process-flow', 'process-flow'])
+  if (family === 'process-flow') return planningProcessFlow(difficulty)
+  return planningTimeline(difficulty)
+}
+
+function planningTimeline(difficulty) {
   const tasks = ['Assembly', 'Inspection', 'Packing', 'Dispatch']
   const durations = tasks.map(() => randInt(20, 55))
   const slotStart = pick([480, 510, 540])
@@ -514,6 +872,7 @@ export function generatePlanning(difficulty) {
   return {
     topic: 'planning',
     topicLabel: 'Planning',
+    variantKey: 'planning-timeline',
     timer: getTimerSeconds('planning', difficulty),
     prompt: `At what time should ${tasks[idx]} finish if tasks are done in the listed order?`,
     visualHtml,
@@ -524,5 +883,177 @@ export function generatePlanning(difficulty) {
   }
 }
 
+function planningProcessFlow(difficulty) {
+  const scenarios = [
+    {
+      key: 'step-1',
+      prompt: 'Which answer sensibly replaces number 1 in the flowchart?',
+      options: ['Was the customer reached?', 'Enter data', 'Contact customer', 'Delete data', 'Reject application'],
+      answer: 'Enter data',
+      explanation: 'After the application is received, the next sensible processing step is to enter the data before checking whether the data are complete.'
+    },
+    {
+      key: 'step-2',
+      prompt: 'Which answer sensibly replaces number 2 in the flowchart?',
+      options: ['Application received?', 'Reject application?', 'Was the customer reached?', 'Could the data be completed?', 'Check data'],
+      answer: 'Could the data be completed?',
+      explanation: 'After trying to complete the missing data, the next decision is whether the data could in fact be completed. If yes, the record is uploaded; if no, the customer is contacted.'
+    },
+    {
+      key: 'step-3',
+      prompt: 'Which answer sensibly replaces number 3 in the flowchart?',
+      options: ['Reject customer', 'Restart data entry', 'Put application on hold?', 'Enter data?', 'Was customer contact successful?'],
+      answer: 'Was customer contact successful?',
+      explanation: 'After the customer is contacted, the next decision is whether the contact was successful. If yes, the data can be uploaded. If no, the application is put on hold.'
+    },
+    {
+      key: 'unreachable-customer',
+      prompt: 'What happens if a record is incomplete and the customer cannot be reached?',
+      options: [
+        'The incomplete record is uploaded to the server.',
+        'The data are deleted.',
+        'The application is put on hold first.',
+        'The data are shown to a supervisor for approval.',
+        'Nothing else happens until the customer calls back.'
+      ],
+      answer: 'The application is put on hold first.',
+      explanation: 'Incomplete records first go to the data-completion step. If completion is not possible, the customer is contacted. If that contact is not successful, the flow leads to putting the application on hold.'
+    },
+    {
+      key: 'which-data-uploaded',
+      prompt: 'Which data are transferred to the server?',
+      options: [
+        'All records',
+        'Only complete records',
+        'Incomplete records as well, but with a note',
+        'Incomplete records that are still usable',
+        'Only data confirmed by the customer by phone'
+      ],
+      answer: 'Only complete records',
+      explanation: 'Records are transferred directly when the data are complete, or after the missing data have been completed successfully. In both cases, only complete records reach the server upload step.'
+    }
+  ]
+  const scenario = pick(scenarios)
+  const options = shuffle([...scenario.options])
+
+  return {
+    topic: 'planning',
+    topicLabel: 'Planning',
+    variantKey: `planning-process-flow-${scenario.key}`,
+    timer: getTimerSeconds('planning', difficulty),
+    prompt: scenario.prompt,
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Data capture flowchart</strong></div>
+        <svg viewBox="0 0 560 500" width="100%" height="400" style="display:block;margin-top:8px;">
+          ${planningFlowchartSvg()}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.explanation,
+    pattern: 'Read the flowchart in direction order. For each decision node, follow the yes/no branches and test where the process can actually continue.'
+  }
+}
+
+function planningFlowchartSvg() {
+  return `
+    <rect x="245" y="10" width="70" height="34" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="280" y="32" text-anchor="middle" font-size="14" font-weight="600" fill="#111827">Start</text>
+
+    <line x1="280" y1="44" x2="280" y2="70" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="276,66 284,66 280,74" fill="#475569"></polygon>
+
+    <path d="M 240 74 L 320 74 L 320 112 Q 280 126 240 112 Z" fill="#f8fafc" stroke="#475569" stroke-width="2"></path>
+    <text x="280" y="96" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">Application</text>
+    <text x="280" y="111" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">received</text>
+
+    <line x1="280" y1="124" x2="280" y2="148" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="276,144 284,144 280,152" fill="#475569"></polygon>
+
+    <polygon points="236,152 324,152 308,194 220,194" fill="#f8fafc" stroke="#475569" stroke-width="2"></polygon>
+    <circle cx="272" cy="173" r="16" fill="#111827"></circle>
+    <text x="272" y="179" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">1</text>
+
+    <line x1="220" y1="173" x2="148" y2="173" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="152,169 152,177 144,173" fill="#475569"></polygon>
+
+    <polygon points="96,132 144,173 96,214 48,173" fill="#f8fafc" stroke="#475569" stroke-width="2"></polygon>
+    <text x="96" y="167" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">Data</text>
+    <text x="96" y="182" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">complete?</text>
+    <text x="64" y="154" text-anchor="middle" font-size="12" fill="#111827">yes</text>
+    <text x="132" y="196" text-anchor="middle" font-size="12" fill="#111827">no</text>
+
+    <line x1="62" y1="206" x2="62" y2="330" stroke="#475569" stroke-width="2.5"></line>
+    <line x1="62" y1="330" x2="188" y2="330" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="184,326 184,334 192,330" fill="#475569"></polygon>
+
+    <line x1="130" y1="206" x2="130" y2="224" stroke="#475569" stroke-width="2.5"></line>
+    <line x1="130" y1="224" x2="272" y2="224" stroke="#475569" stroke-width="2.5"></line>
+    <line x1="272" y1="224" x2="272" y2="232" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="268,228 276,228 272,236" fill="#475569"></polygon>
+
+    <rect x="208" y="236" width="128" height="40" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="272" y="252" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">Complete</text>
+    <text x="272" y="268" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">data</text>
+
+    <line x1="272" y1="276" x2="272" y2="292" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="268,288 276,288 272,296" fill="#475569"></polygon>
+
+    <polygon points="272,296 320,337 272,378 224,337" fill="#f8fafc" stroke="#475569" stroke-width="2"></polygon>
+    <circle cx="272" cy="337" r="16" fill="#111827"></circle>
+    <text x="272" y="343" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">2</text>
+    <text x="240" y="318" text-anchor="middle" font-size="12" fill="#111827">yes</text>
+    <text x="308" y="318" text-anchor="middle" font-size="12" fill="#111827">no</text>
+
+    <line x1="224" y1="337" x2="192" y2="337" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="196,333 196,341 188,337" fill="#475569"></polygon>
+
+    <line x1="320" y1="337" x2="366" y2="337" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="362,333 362,341 370,337" fill="#475569"></polygon>
+
+    <rect x="370" y="316" width="106" height="42" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="423" y="333" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">Contact</text>
+    <text x="423" y="349" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">customer</text>
+
+    <line x1="423" y1="358" x2="423" y2="372" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="419,368 427,368 423,376" fill="#475569"></polygon>
+
+    <polygon points="423,376 471,417 423,458 375,417" fill="#f8fafc" stroke="#475569" stroke-width="2"></polygon>
+    <circle cx="423" cy="417" r="16" fill="#111827"></circle>
+    <text x="423" y="423" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">3</text>
+    <text x="391" y="398" text-anchor="middle" font-size="12" fill="#111827">yes</text>
+    <text x="459" y="398" text-anchor="middle" font-size="12" fill="#111827">no</text>
+
+    <line x1="375" y1="417" x2="320" y2="417" stroke="#475569" stroke-width="2.5"></line>
+    <line x1="320" y1="417" x2="320" y2="330" stroke="#475569" stroke-width="2.5"></line>
+    <line x1="320" y1="330" x2="312" y2="330" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="316,326 316,334 308,330" fill="#475569"></polygon>
+
+    <line x1="471" y1="417" x2="500" y2="417" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="496,413 496,421 504,417" fill="#475569"></polygon>
+    <rect x="504" y="396" width="52" height="42" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="530" y="412" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">Put on</text>
+    <text x="530" y="427" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">hold</text>
+
+    <rect x="192" y="310" width="116" height="40" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="250" y="326" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">Upload data</text>
+    <text x="250" y="342" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">to server</text>
+
+    <rect x="8" y="310" width="124" height="40" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="70" y="326" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">Automatic</text>
+    <text x="70" y="341" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">data forwarding</text>
+
+    <line x1="132" y1="330" x2="192" y2="330" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="188,326 188,334 196,330" fill="#475569"></polygon>
+
+    <line x1="250" y1="350" x2="250" y2="382" stroke="#475569" stroke-width="2.5"></line>
+    <polygon points="246,378 254,378 250,386" fill="#475569"></polygon>
+
+    <rect x="218" y="386" width="64" height="34" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="2"></rect>
+    <text x="250" y="407" text-anchor="middle" font-size="14" font-weight="600" fill="#111827">End</text>
+  `
+}
 
 

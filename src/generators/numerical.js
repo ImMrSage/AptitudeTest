@@ -90,6 +90,134 @@ export function pieSvg(cx, cy, r, percentages, colors) {
       };
     }
 
+    export function numericalEmploymentLine(difficulty) {
+      const years = [2009, 2012, 2015, 2018];
+      const men = [14987984, 15838217, 16504172, 17696536];
+      const women = [12615297, 13441817, 14267125, 15173692];
+      const differences = years.map((_, index) => men[index] - women[index]);
+      const askType = pick(['smallest-difference', 'percent-more', 'average-difference']);
+
+      let prompt = '';
+      let optionTexts = [];
+      let correctText = '';
+      let explanationHtml = '';
+      let variantKey = '';
+
+      if (askType === 'smallest-difference') {
+        const minIndex = differences.indexOf(Math.min(...differences));
+        prompt = 'In which year was the difference between male and female employees the smallest?';
+        optionTexts = years.map(String);
+        correctText = String(years[minIndex]);
+        explanationHtml = `
+          <div class="formula-block">
+            ${years.map((year, index) => `<div class="formula-line">${year}: ${formatNumber(men[index])} - ${formatNumber(women[index])} = ${formatNumber(differences[index])}</div>`).join('')}
+            <div class="formula-line">Smallest difference = ${years[minIndex]}</div>
+          </div>
+        `;
+        variantKey = 'numerical-employment-line-smallest-difference';
+      } else if (askType === 'percent-more') {
+        const percentMore = Math.round(((men[2] - women[2]) / women[2]) * 1000) / 10;
+        prompt = 'In 2015, by what percentage were there more male employees than female employees?';
+        optionTexts = shuffle(['15.7%', '21.0%', '13.5%', '18.9%', '16.5%']);
+        correctText = `${percentMore.toFixed(1)}%`;
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Difference in 2015 = ${formatNumber(men[2])} - ${formatNumber(women[2])} = ${formatNumber(differences[2])}</div>
+            <div class="formula-line">Percentage more than women = ${formatNumber(differences[2])} / ${formatNumber(women[2])}</div>
+            <div class="formula-line">= ${(differences[2] / women[2]).toFixed(4)} = ${percentMore.toFixed(1)}%</div>
+          </div>
+        `;
+        variantKey = 'numerical-employment-line-percent-more';
+      } else {
+        const avgDifference = Math.round(differences.reduce((sum, value) => sum + value, 0) / differences.length);
+        prompt = 'On average, from 2009 to 2018, how many more men than women were employed per year?';
+        optionTexts = shuffle([
+          formatNumber(avgDifference),
+          formatNumber(2282245),
+          formatNumber(2522844),
+          formatNumber(2396400),
+          formatNumber(2237047),
+        ]);
+        correctText = formatNumber(avgDifference);
+        explanationHtml = `
+          <div class="formula-block">
+            <div class="formula-line">Yearly differences: ${differences.map(value => formatNumber(value)).join(', ')}</div>
+            <div class="formula-line">Average = (${differences.map(value => formatNumber(value)).join(' + ')}) / 4</div>
+            <div class="formula-line">Average difference = ${formatNumber(avgDifference)}</div>
+          </div>
+        `;
+        variantKey = 'numerical-employment-line-average-difference';
+      }
+
+      const chartWidth = 520;
+      const chartHeight = 250;
+      const left = 78;
+      const top = 26;
+      const plotWidth = 380;
+      const plotHeight = 160;
+      const maxValue = 20000000;
+      const xFor = index => left + (plotWidth / (years.length - 1)) * index;
+      const yFor = value => top + plotHeight - (value / maxValue) * plotHeight;
+      const menPoints = years.map((_, index) => `${xFor(index)},${yFor(men[index])}`).join(' ');
+      const womenPoints = years.map((_, index) => `${xFor(index)},${yFor(women[index])}`).join(' ');
+      const gridLines = Array.from({ length: 11 }, (_, idx) => {
+        const value = idx * 2000000;
+        const y = yFor(value);
+        return `
+          <line x1="${left}" y1="${y}" x2="${left + plotWidth}" y2="${y}" stroke="#cbd5e1" stroke-width="1"></line>
+          <text x="${left - 10}" y="${y + 4}" text-anchor="end" font-size="12" fill="#334155">${formatNumber(value)}</text>
+        `;
+      }).join('');
+      const yearLabels = years.map((year, index) => `<text x="${xFor(index)}" y="${top + plotHeight + 24}" text-anchor="middle" font-size="13" fill="#0f172a">${year}</text>`).join('');
+      const menDots = years.map((year, index) => `
+        <rect x="${xFor(index) - 5}" y="${yFor(men[index]) - 5}" width="10" height="10" fill="#111827"></rect>
+        <text x="${xFor(index)}" y="${yFor(men[index]) - 12}" text-anchor="middle" font-size="12" fill="#0f172a">${formatNumber(men[index])}</text>
+      `).join('');
+      const womenDots = years.map((year, index) => `
+        <circle cx="${xFor(index)}" cy="${yFor(women[index])}" r="5" fill="#6b7280"></circle>
+        <text x="${xFor(index)}" y="${yFor(women[index]) + 18}" text-anchor="middle" font-size="12" fill="#0f172a">${formatNumber(women[index])}</text>
+      `).join('');
+
+      const visualHtml = `
+        <div class="chart">
+          <div class="center"><strong>Employees subject to social insurance</strong></div>
+          <div class="small center mt8">In Germany, by sex and year (as at 30 June)</div>
+          <svg viewBox="0 0 ${chartWidth} ${chartHeight}" width="100%" height="250" style="display:block;margin-top:10px;">
+            <rect x="${left}" y="${top}" width="${plotWidth}" height="${plotHeight}" fill="#f3f4f6" stroke="#cbd5e1"></rect>
+            ${gridLines}
+            <polyline points="${menPoints}" fill="none" stroke="#111827" stroke-width="3"></polyline>
+            <polyline points="${womenPoints}" fill="none" stroke="#6b7280" stroke-width="3"></polyline>
+            ${menDots}
+            ${womenDots}
+            ${yearLabels}
+            <line x1="${left}" y1="${top + plotHeight}" x2="${left + plotWidth}" y2="${top + plotHeight}" stroke="#475569" stroke-width="1.5"></line>
+          </svg>
+          <div style="display:flex;justify-content:center;gap:20px;font-size:13px;color:#111827;margin-top:6px;">
+            <div><span style="display:inline-block;width:14px;height:3px;background:#111827;margin-right:6px;vertical-align:middle;"></span>Men</div>
+            <div><span style="display:inline-block;width:14px;height:3px;background:#6b7280;margin-right:6px;vertical-align:middle;"></span>Women</div>
+          </div>
+          <div class="small mt8">Source: Federal Statistical Office</div>
+        </div>
+      `;
+
+      const options = optionTexts.map(text => ({ text, plain: text }));
+      const correctIndex = optionTexts.indexOf(correctText);
+
+      return {
+        topic: 'numerical',
+        topicLabel: 'Numerical reasoning',
+        familyKey: 'numerical-employment-line',
+        variantKey,
+        timer: getTimerSeconds('numerical', difficulty),
+        prompt,
+        visualHtml,
+        options,
+        correctIndex,
+        explanation: 'Read the values directly from the line chart first, then calculate only what the question asks for.',
+        explanationHtml,
+        pattern: 'For line charts, extract the exact values by year before comparing differences, percentages, or averages.'
+      };
+    }
     export function numericalPieGrowth(difficulty) {
       const total = pick([80, 84, 90, 96, 100, 120]);
       const regions = ['Asia', 'N. America', 'S. America', 'Europe', 'Other'];
@@ -648,27 +776,27 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         const isInternational = pick([true, false]);
         const total = national[bucketIndex] + (isInternational ? international[bucketIndex] : 0) + expressRates[service];
         const quoted = pick([total, total + pick([2.0, 3.0, 4.0]), total - pick([1.0, 2.0, 3.0])]);
-        prompt = `${isInternational ? 'International' : 'National'} delivery of a parcel weighing ${weights[bucketIndex]} kilos via '${service}' costs £${quoted.toFixed(2)}.`;
+        prompt = `${isInternational ? 'International' : 'National'} delivery of a parcel weighing ${weights[bucketIndex]} kilos via '${service}' costs Â£${quoted.toFixed(2)}.`;
         correctText = Math.abs(quoted - total) < 0.001 ? 'True' : 'False';
         explanationHtml = `
           <div class="formula-block">
-            <div class="formula-line">Base national price = £${national[bucketIndex].toFixed(2)}</div>
-            <div class="formula-line">International surcharge = £${(isInternational ? international[bucketIndex] : 0).toFixed(2)}</div>
-            <div class="formula-line">${service} surcharge = £${expressRates[service].toFixed(2)}</div>
-            <div class="formula-line">Total = £${total.toFixed(2)}</div>
+            <div class="formula-line">Base national price = Â£${national[bucketIndex].toFixed(2)}</div>
+            <div class="formula-line">International surcharge = Â£${(isInternational ? international[bucketIndex] : 0).toFixed(2)}</div>
+            <div class="formula-line">${service} surcharge = Â£${expressRates[service].toFixed(2)}</div>
+            <div class="formula-line">Total = Â£${total.toFixed(2)}</div>
           </div>
         `;
         variantKey = 'numerical-judgement-mail-order-price';
       } else {
         const totalNational = national[2] + expressRates['Express Sunday'];
         const totalInternational = national[2] + international[2] + expressRates['Express Sunday'];
-        prompt = 'A parcel weighing 19 kilos sent by Express Sunday costs more than £80.00.';
+        prompt = 'A parcel weighing 19 kilos sent by Express Sunday costs more than Â£80.00.';
         correctText = 'Cannot say';
         explanationHtml = `
           <div class="formula-block">
-            <div class="formula-line">If national: £${national[2].toFixed(2)} + £${expressRates['Express Sunday'].toFixed(2)} = £${totalNational.toFixed(2)}</div>
-            <div class="formula-line">If international: £${national[2].toFixed(2)} + £${international[2].toFixed(2)} + £${expressRates['Express Sunday'].toFixed(2)} = £${totalInternational.toFixed(2)}</div>
-            <div class="formula-line">One total is below £80.00 and the other is above it.</div>
+            <div class="formula-line">If national: Â£${national[2].toFixed(2)} + Â£${expressRates['Express Sunday'].toFixed(2)} = Â£${totalNational.toFixed(2)}</div>
+            <div class="formula-line">If international: Â£${national[2].toFixed(2)} + Â£${international[2].toFixed(2)} + Â£${expressRates['Express Sunday'].toFixed(2)} = Â£${totalInternational.toFixed(2)}</div>
+            <div class="formula-line">One total is below Â£80.00 and the other is above it.</div>
           </div>
         `;
         variantKey = 'numerical-judgement-mail-order-unknown';
@@ -709,8 +837,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         correctText = isTrue ? 'True' : 'False';
         explanationHtml = `
           <div class="formula-block">
-            <div class="formula-line">Battery production cost = £${production[2]}</div>
-            <div class="formula-line">Ignition contact production cost = £${production[1]}</div>
+            <div class="formula-line">Battery production cost = Â£${production[2]}</div>
+            <div class="formula-line">Ignition contact production cost = Â£${production[1]}</div>
           </div>
         `;
         variantKey = 'numerical-judgement-profit-loss-production';
@@ -720,8 +848,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
         correctText = isTrue ? 'True' : 'False';
         explanationHtml = `
           <div class="formula-block">
-            <div class="formula-line">Ignition coil total = ${material[0]} + ${production[0]} + ${profit[0]} = £${totals[0]}</div>
-            <div class="formula-line">Ignition contact total = ${material[1]} + ${production[1]} + ${profit[1]} = £${totals[1]}</div>
+            <div class="formula-line">Ignition coil total = ${material[0]} + ${production[0]} + ${profit[0]} = Â£${totals[0]}</div>
+            <div class="formula-line">Ignition contact total = ${material[1]} + ${production[1]} + ${profit[1]} = Â£${totals[1]}</div>
           </div>
         `;
         variantKey = 'numerical-judgement-profit-loss-revenue';
@@ -795,8 +923,8 @@ export function pieSvg(cx, cy, r, percentages, colors) {
               ${[['1 - 5 kg', national[0], international[0]], ['6 - 10 kg', national[1], international[1]], ['11 - 20 kg', national[2], international[2]]].map((row, index) => `
                 <tr>
                   <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">${row[0]}</td>
-                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">£${Number(row[1]).toFixed(2)}</td>
-                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">£${Number(row[2]).toFixed(2)}</td>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">Â£${Number(row[1]).toFixed(2)}</td>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">Â£${Number(row[2]).toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -813,7 +941,7 @@ export function pieSvg(cx, cy, r, percentages, colors) {
               ${Object.entries(expressRates).map(([service, price], index) => `
                 <tr>
                   <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">${service}</td>
-                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">£${price.toFixed(2)}</td>
+                  <td style="background:${index % 2 === 0 ? '#ffffff' : '#f8fafc'};border:1px solid #cbd5e1;padding:8px 6px;text-align:center;">Â£${price.toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
