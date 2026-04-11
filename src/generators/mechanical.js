@@ -39,7 +39,24 @@ export function generateMechanical(difficulty) {
     'door-spring',
     'bolt-cutter',
     'relative-speed',
-    'halligan'
+    'halligan',
+    'bulb-bypass',
+    'drain-seal',
+    'winch-direction',
+    'doorstop-slip-compare',
+    'reflector-light-area',
+    'drum-pitch',
+    'pressure-pointer',
+    'shelf-bracket',
+    'curve-skid',
+    'fan-drive-direction',
+    'bulb-power',
+    'ladder-stability',
+    'pulley-rank',
+    'balance-heaviest',
+    'chain-load',
+    'water-overflow-level',
+    'wheel-direction-pair'
   ]
   const family = pick(families)
   if (family === 'gear') return mechanicalGear(difficulty)
@@ -70,6 +87,23 @@ export function generateMechanical(difficulty) {
   if (family === 'door-spring') return mechanicalDoorSpring(difficulty)
   if (family === 'bolt-cutter') return mechanicalBoltCutter(difficulty)
   if (family === 'relative-speed') return mechanicalRelativeSpeed(difficulty)
+  if (family === 'bulb-bypass') return mechanicalBulbBypass(difficulty)
+  if (family === 'drain-seal') return mechanicalDrainSeal(difficulty)
+  if (family === 'winch-direction') return mechanicalWinchDirection(difficulty)
+  if (family === 'doorstop-slip-compare') return mechanicalDoorstopSlipCompare(difficulty)
+  if (family === 'reflector-light-area') return mechanicalReflectorLightArea(difficulty)
+  if (family === 'drum-pitch') return mechanicalDrumPitch(difficulty)
+  if (family === 'pressure-pointer') return mechanicalPressurePointer(difficulty)
+  if (family === 'shelf-bracket') return mechanicalShelfBracket(difficulty)
+  if (family === 'curve-skid') return mechanicalCurveSkid(difficulty)
+  if (family === 'fan-drive-direction') return mechanicalFanDriveDirection(difficulty)
+  if (family === 'bulb-power') return mechanicalBulbPower(difficulty)
+  if (family === 'ladder-stability') return mechanicalLadderStability(difficulty)
+  if (family === 'pulley-rank') return mechanicalPulleyRank(difficulty)
+  if (family === 'balance-heaviest') return mechanicalBalanceHeaviest(difficulty)
+  if (family === 'chain-load') return mechanicalChainLoad(difficulty)
+  if (family === 'water-overflow-level') return mechanicalWaterOverflowLevel(difficulty)
+  if (family === 'wheel-direction-pair') return mechanicalWheelDirectionPair(difficulty)
   return mechanicalHalligan(difficulty)
 }
 function mechanicalGear(difficulty) {
@@ -1918,6 +1952,767 @@ function jarSvg(cx, scale, hasHoles, label) {
       <text x="${cx}" y="${y + h + 22}" text-anchor="middle" font-size="16">${label}</text>
     </g>
   `
+}
+
+function simpleMechanicalBulbSvg(cx, cy, label) {
+  return `
+    <g>
+      <circle cx="${cx}" cy="${cy - 14}" r="16" fill="#ffffff" stroke="#111827" stroke-width="3"></circle>
+      <rect x="${cx - 8}" y="${cy - 2}" width="16" height="10" rx="2" fill="#d1d5db" stroke="#111827" stroke-width="2"></rect>
+      <path d="M ${cx - 8} ${cy - 14} Q ${cx} ${cy - 24} ${cx + 8} ${cy - 14}" fill="none" stroke="#6b7280" stroke-width="2"></path>
+      <text x="${cx + 20}" y="${cy - 8}" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function drainSealSvg(cx, label, pressureSeals) {
+  const tankY = 54
+  const plugTop = pressureSeals ? 156 : 126
+  const plugBottom = pressureSeals ? 126 : 156
+  return `
+    <g>
+      <rect x="${cx - 60}" y="${tankY}" width="120" height="78" fill="#f8fafc" stroke="#475569" stroke-width="3"></rect>
+      <line x1="${cx - 60}" y1="${tankY + 26}" x2="${cx + 60}" y2="${tankY + 26}" stroke="#cbd5e1" stroke-width="2"></line>
+      <line x1="${cx}" y1="${tankY + 78}" x2="${cx}" y2="${tankY + 102}" stroke="#111827" stroke-width="4"></line>
+      <polygon points="${cx - 12},${plugTop} ${cx + 12},${plugTop} ${cx + 7},${plugBottom} ${cx - 7},${plugBottom}" fill="#d4a514" stroke="#111827" stroke-width="2"></polygon>
+      <text x="${cx}" y="${tankY + 118}" text-anchor="middle" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function doorstopCompareSvg(cx, label, shallow) {
+  const tipX = cx + 18
+  const baseX = cx - (shallow ? 34 : 18)
+  return `
+    <g>
+      <line x1="${cx - 54}" y1="158" x2="${cx + 54}" y2="158" stroke="#6b7280" stroke-width="4"></line>
+      <rect x="${cx + 12}" y="82" width="36" height="76" fill="#f8fafc" stroke="#111827" stroke-width="3"></rect>
+      <polygon points="${baseX},158 ${tipX},158 ${tipX},140" fill="#d1d5db" stroke="#111827" stroke-width="2"></polygon>
+      <path d="M ${tipX} 140 L ${baseX} 158" stroke="#111827" stroke-width="2"></path>
+      <text x="${cx}" y="186" text-anchor="middle" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function reflectorLampSvg(cx, label, width) {
+  const half = width / 2
+  return `
+    <g>
+      <path d="M ${cx - half} 72 Q ${cx + 8} 104 ${cx - half} 136" fill="none" stroke="#6b7280" stroke-width="4"></path>
+      <line x1="${cx - half}" y1="72" x2="${cx - half}" y2="136" stroke="#6b7280" stroke-width="4"></line>
+      <circle cx="${cx - half + 28}" cy="104" r="8" fill="#111827"></circle>
+      <path d="M ${cx - half + 28} 104 C ${cx - half + 58} 94 ${cx - half + 80} 94 ${cx - half + 102} 104" fill="none" stroke="#cbd5e1" stroke-width="3" opacity="0.8"></path>
+      <path d="M ${cx - half + 28} 104 C ${cx - half + 56} 84 ${cx - half + 84} 74 ${cx - half + width} 64" fill="none" stroke="#e2e8f0" stroke-width="3" opacity="0.7"></path>
+      <path d="M ${cx - half + 28} 104 C ${cx - half + 56} 124 ${cx - half + 84} 134 ${cx - half + width} 144" fill="none" stroke="#e2e8f0" stroke-width="3" opacity="0.7"></path>
+      <text x="${cx - half + 18}" y="52" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function drumSvg(cx, cy, radius, label) {
+  return `
+    <g>
+      <ellipse cx="${cx}" cy="${cy - 30}" rx="${radius}" ry="10" fill="#f8fafc" stroke="#111827" stroke-width="3"></ellipse>
+      <line x1="${cx - radius}" y1="${cy - 30}" x2="${cx - radius}" y2="${cy + 18}" stroke="#111827" stroke-width="3"></line>
+      <line x1="${cx + radius}" y1="${cy - 30}" x2="${cx + radius}" y2="${cy + 18}" stroke="#111827" stroke-width="3"></line>
+      <ellipse cx="${cx}" cy="${cy + 18}" rx="${radius}" ry="10" fill="#ffffff" stroke="#111827" stroke-width="3"></ellipse>
+      ${Array.from({ length: 5 }, (_, index) => {
+        const x = cx - radius + 10 + index * ((radius * 2 - 20) / 4)
+        return `<line x1="${x}" y1="${cy - 24}" x2="${x + 10}" y2="${cy + 10}" stroke="#6b7280" stroke-width="2"></line>`
+      }).join('')}
+      <text x="${cx + radius + 8}" y="${cy - 24}" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function shelfBracketSvg(cx, label, height) {
+  return `
+    <g>
+      <line x1="${cx - 36}" y1="54" x2="${cx - 36}" y2="150" stroke="#111827" stroke-width="4"></line>
+      <line x1="${cx - 36}" y1="110" x2="${cx + 24}" y2="110" stroke="#111827" stroke-width="4"></line>
+      <line x1="${cx - 36}" y1="${110 - height}" x2="${cx + 20}" y2="110" stroke="#6b7280" stroke-width="4"></line>
+      <line x1="${cx - 36}" y1="150" x2="${cx + 10}" y2="110" stroke="#9ca3af" stroke-width="3"></line>
+      <text x="${cx - 8}" y="174" text-anchor="middle" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function fanBladeSvg(cx, cy) {
+  return `
+    <g>
+      <circle cx="${cx}" cy="${cy}" r="16" fill="#f8fafc" stroke="#111827" stroke-width="3"></circle>
+      <path d="M ${cx} ${cy - 12} C ${cx + 18} ${cy - 26} ${cx + 28} ${cy - 6} ${cx + 8} ${cy - 2} Z" fill="#d1d5db" stroke="#111827" stroke-width="2"></path>
+      <path d="M ${cx + 12} ${cy} C ${cx + 28} ${cy + 16} ${cx + 10} ${cy + 30} ${cx + 2} ${cy + 10} Z" fill="#d1d5db" stroke="#111827" stroke-width="2"></path>
+      <path d="M ${cx - 8} ${cy + 8} C ${cx - 24} ${cy + 22} ${cx - 34} ${cy + 4} ${cx - 10} ${cy} Z" fill="#d1d5db" stroke="#111827" stroke-width="2"></path>
+    </g>
+  `
+}
+
+function wattBulbSvg(cx, cy, size, label, watts) {
+  return `
+    <g>
+      <circle cx="${cx}" cy="${cy - size * 0.6}" r="${size * 0.55}" fill="#e5e7eb" stroke="#111827" stroke-width="3"></circle>
+      <rect x="${cx - size * 0.22}" y="${cy - size * 0.15}" width="${size * 0.44}" height="${size * 0.26}" rx="3" fill="#d1d5db" stroke="#111827" stroke-width="2"></rect>
+      <text x="${cx}" y="${cy + 16}" text-anchor="middle" font-size="12" font-weight="700">${watts} WATT</text>
+      ${label ? `<text x="${cx + size * 0.6}" y="${cy - size * 0.9}" font-size="16" font-weight="700">${label}</text>` : ''}
+    </g>
+  `
+}
+
+function stepLadderSvg(cx, width, label) {
+  return `
+    <g>
+      <line x1="${cx}" y1="52" x2="${cx - width / 2}" y2="162" stroke="#111827" stroke-width="4"></line>
+      <line x1="${cx}" y1="52" x2="${cx + width / 2}" y2="162" stroke="#111827" stroke-width="4"></line>
+      <line x1="${cx - 12}" y1="58" x2="${cx - width / 2 + 12}" y2="162" stroke="#6b7280" stroke-width="4"></line>
+      ${Array.from({ length: 5 }, (_, index) => {
+        const y = 76 + index * 18
+        const left = cx - 8 - index * (width / 12)
+        const right = cx - width / 2 + 16 + index * (width / 18)
+        return `<line x1="${left}" y1="${y}" x2="${right}" y2="${y + 8}" stroke="#9ca3af" stroke-width="2"></line>`
+      }).join('')}
+      <text x="${cx}" y="188" text-anchor="middle" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function rankPulleySvg(cx, label, segments) {
+  const x = cx
+  return `
+    <g>
+      <line x1="${x - 42}" y1="28" x2="${x + 42}" y2="28" stroke="#111827" stroke-width="6"></line>
+      <circle cx="${x}" cy="54" r="12" fill="#f8fafc" stroke="#111827" stroke-width="3"></circle>
+      ${segments > 2 ? `<circle cx="${x}" cy="98" r="12" fill="#f8fafc" stroke="#111827" stroke-width="3"></circle>` : ''}
+      ${Array.from({ length: segments }, (_, index) => {
+        const lineX = x - (segments - 1) * 8 + index * 16
+        const endY = segments > 2 ? 136 : 128
+        return `<line x1="${lineX}" y1="66" x2="${lineX}" y2="${endY}" stroke="#111827" stroke-width="3"></line>`
+      }).join('')}
+      <rect x="${x - 16}" y="${segments > 2 ? 136 : 128}" width="32" height="22" fill="#d1d5db" stroke="#111827" stroke-width="2"></rect>
+      <path d="M ${x - 30} ${segments > 2 ? 82 : 72} L ${x - 48} ${segments > 2 ? 122 : 112}" stroke="#111827" stroke-width="3"></path>
+      <polygon points="${x - 48},${segments > 2 ? 122 : 112} ${x - 58},${segments > 2 ? 116 : 106} ${x - 48},${segments > 2 ? 132 : 122}" fill="#111827"></polygon>
+      <text x="${x}" y="190" text-anchor="middle" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function balanceScaleSvg(cx, label, sliderOffset) {
+  return `
+    <g>
+      <rect x="${cx - 26}" y="22" width="52" height="8" fill="#111827"></rect>
+      <line x1="${cx}" y1="30" x2="${cx}" y2="56" stroke="#6b7280" stroke-width="3"></line>
+      <line x1="${cx - 26}" y1="56" x2="${cx + 36}" y2="56" stroke="#111827" stroke-width="4"></line>
+      <rect x="${cx - 8 + sliderOffset / 4}" y="50" width="12" height="12" fill="#111827"></rect>
+      <line x1="${cx - 10}" y1="56" x2="${cx - 10}" y2="92" stroke="#6b7280" stroke-width="3"></line>
+      <line x1="${cx - 10}" y1="92" x2="${cx - 22}" y2="116" stroke="#6b7280" stroke-width="2"></line>
+      <line x1="${cx - 10}" y1="92" x2="${cx + 2}" y2="116" stroke="#6b7280" stroke-width="2"></line>
+      <line x1="${cx - 22}" y1="116" x2="${cx + 2}" y2="116" stroke="#6b7280" stroke-width="2"></line>
+      <rect x="${cx - 22}" y="116" width="24" height="24" fill="#d1d5db" stroke="#111827" stroke-width="2"></rect>
+      ${Array.from({ length: 2 }, (_, r) => Array.from({ length: 2 }, (_, c) => `<rect x="${cx - 18 + c * 10}" y="${120 + r * 10}" width="6" height="6" fill="#9ca3af"></rect>`).join('')).join('')}
+      <text x="${cx + 34}" y="64" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function chainLoadSvg(cx, label, topY) {
+  return `
+    <g>
+      <rect x="${cx - 34}" y="46" width="10" height="112" fill="#111827"></rect>
+      <line x1="${cx - 24}" y1="${topY}" x2="${cx + 26}" y2="112" stroke="#9ca3af" stroke-width="3" stroke-dasharray="4 4"></line>
+      <line x1="${cx - 24}" y1="112" x2="${cx + 26}" y2="112" stroke="#111827" stroke-width="3"></line>
+      <line x1="${cx - 24}" y1="158" x2="${cx + 26}" y2="112" stroke="#111827" stroke-width="3"></line>
+      <text x="${cx - 2}" y="102" font-size="16" font-weight="700">${label}</text>
+    </g>
+  `
+}
+
+function mechanicalBulbBypass(difficulty) {
+  const switchedBranch = pick(['A', 'B'])
+  const answer = switchedBranch === 'A' ? 'B' : 'A'
+  const options = ['A', 'B', 'neither']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bulb-bypass-${switchedBranch}`,
+    familyKey: 'mechanical-bulb-bypass',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which bulb can continue to glow when the switch is opened?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Bulb and switch circuit</strong></div>
+        <svg viewBox="0 0 420 210" width="100%" height="210" style="display:block;margin-top:10px;">
+          <line x1="80" y1="165" x2="154" y2="165" stroke="#111827" stroke-width="4"></line>
+          <line x1="168" y1="156" x2="168" y2="174" stroke="#111827" stroke-width="3"></line>
+          <line x1="180" y1="150" x2="180" y2="180" stroke="#111827" stroke-width="5"></line>
+          <line x1="180" y1="165" x2="338" y2="165" stroke="#111827" stroke-width="4"></line>
+          <line x1="80" y1="165" x2="80" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="338" y1="165" x2="338" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="80" y1="70" x2="130" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="288" y1="70" x2="338" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="210" y1="70" x2="210" y2="165" stroke="#111827" stroke-width="4"></line>
+          <line x1="130" y1="70" x2="154" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="184" y1="70" x2="210" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="236" y1="70" x2="262" y2="70" stroke="#111827" stroke-width="4"></line>
+          <line x1="292" y1="70" x2="338" y2="70" stroke="#111827" stroke-width="4"></line>
+          ${switchedBranch === 'A'
+            ? `<line x1="154" y1="70" x2="172" y2="62" stroke="#111827" stroke-width="4"></line><line x1="184" y1="70" x2="172" y2="62" stroke="#111827" stroke-width="4"></line>`
+            : `<line x1="262" y1="70" x2="280" y2="62" stroke="#111827" stroke-width="4"></line><line x1="292" y1="70" x2="280" y2="62" stroke="#111827" stroke-width="4"></line>`
+          }
+          ${simpleMechanicalBulbSvg(170, 70, 'A')}
+          ${simpleMechanicalBulbSvg(276, 70, 'B')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Opening the switch breaks only bulb ${switchedBranch}'s branch. Bulb ${answer} still has a complete closed path through the battery, so it can stay lit.`,
+    pattern: 'In parallel circuits, opening one branch does not kill another branch that still has a complete loop.',
+  }
+}
+
+function mechanicalDrainSeal(difficulty) {
+  const answer = pick(['A', 'B'])
+  const options = ['A', 'B', 'No difference']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-drain-seal-${answer}`,
+    familyKey: 'mechanical-drain-seal',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which drain is less likely to leak?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Drain stopper comparison</strong></div>
+        <svg viewBox="0 0 420 210" width="100%" height="210" style="display:block;margin-top:10px;">
+          ${drainSealSvg(120, 'A', answer === 'A')}
+          ${drainSealSvg(300, 'B', answer === 'B')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Drain ${answer} is less likely to leak because the water pressure pushes its tapered stopper more firmly into the opening rather than tending to lift it away.`,
+    pattern: 'If fluid pressure pushes a stopper deeper into its seat, the seal is usually stronger.',
+  }
+}
+
+function mechanicalWinchDirection(difficulty) {
+  const answer = pick(['A', 'B'])
+  const options = ['A', 'B', 'either']
+  const wrapOverTop = answer === 'A'
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-winch-direction-${answer}`,
+    familyKey: 'mechanical-winch-direction',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'In which direction should the handle be turned in order to pull the boat onto the trailer?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Boat winch</strong></div>
+        <svg viewBox="0 0 430 200" width="100%" height="200" style="display:block;margin-top:10px;">
+          <path d="M40 62 C82 48 118 58 166 42" fill="none" stroke="#94a3b8" stroke-width="4"></path>
+          <polygon points="166,42 154,38 157,50" fill="#94a3b8"></polygon>
+          <rect x="120" y="120" width="170" height="10" fill="#6b7280"></rect>
+          <rect x="182" y="72" width="66" height="40" rx="8" fill="#d1d5db" stroke="#475569" stroke-width="3"></rect>
+          <circle cx="215" cy="92" r="18" fill="#f8fafc" stroke="#111827" stroke-width="3"></circle>
+          <circle cx="250" cy="92" r="6" fill="#111827"></circle>
+          <line x1="250" y1="92" x2="274" y2="76" stroke="#111827" stroke-width="4"></line>
+          <circle cx="278" cy="74" r="7" fill="#111827"></circle>
+          <path d="M 215 ${wrapOverTop ? 74 : 110} C 164 ${wrapOverTop ? 62 : 120}, 124 ${wrapOverTop ? 58 : 132}, 90 ${wrapOverTop ? 50 : 136}" fill="none" stroke="#334155" stroke-width="4"></path>
+          <path d="M 221 48 C 202 62 202 88 220 102" fill="none" stroke="#111827" stroke-width="4"></path>
+          <polygon points="218,42 207,49 219,55" fill="#111827"></polygon>
+          <text x="202" y="112" font-size="16" font-weight="700">A</text>
+          <path d="M 280 44 C 300 58 300 88 282 102" fill="none" stroke="#111827" stroke-width="4"></path>
+          <polygon points="283,42 294,49 282,55" fill="#111827"></polygon>
+          <text x="294" y="112" font-size="16" font-weight="700">B</text>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `The rope leaves the drum on the ${wrapOverTop ? 'top' : 'bottom'} side. Turning the handle in direction ${answer} winds the rope onto the drum and pulls the boat inward.`,
+    pattern: 'For winches, look at which way the rope must wind onto the drum, not just which way the handle seems to move.',
+  }
+}
+
+function mechanicalDoorstopSlipCompare(difficulty) {
+  const answer = pick(['A', 'B'])
+  const options = ['A', 'B', 'No difference']
+  const shallowA = answer === 'A'
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-doorstop-slip-compare-${answer}`,
+    familyKey: 'mechanical-doorstop-slip-compare',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which doorstop is more likely to slip?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Doorstop comparison</strong></div>
+        <svg viewBox="0 0 420 200" width="100%" height="200" style="display:block;margin-top:10px;">
+          ${doorstopCompareSvg(125, 'A', shallowA)}
+          ${doorstopCompareSvg(295, 'B', !shallowA)}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Doorstop ${answer} has the shallower wedge angle. A shallower wedge is pushed outward more easily, so it is more likely to slip.`,
+    pattern: 'A shallow wedge converts more of the door force into sideways sliding force.',
+  }
+}
+
+function mechanicalReflectorLightArea(difficulty) {
+  const answer = pick(['A', 'B'])
+  const options = ['A', 'B', 'No difference']
+  const narrowA = answer === 'A'
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-reflector-light-area-${answer}`,
+    familyKey: 'mechanical-reflector-light-area',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which will create the smaller area of light?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Reflector lamps</strong></div>
+        <svg viewBox="0 0 420 210" width="100%" height="210" style="display:block;margin-top:10px;">
+          ${reflectorLampSvg(125, 'A', narrowA ? 74 : 104)}
+          ${reflectorLampSvg(295, 'B', narrowA ? 104 : 74)}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Lamp ${answer} has the narrower reflector, so its beam spreads less and produces the smaller illuminated area.`,
+    pattern: 'A narrower beam gives a smaller light patch; a wider beam spreads the same light over a larger area.',
+  }
+}
+
+function mechanicalDrumPitch(difficulty) {
+  const answer = pick(['A', 'B'])
+  const options = ['A', 'B', 'No difference']
+  const radiusA = answer === 'A' ? 34 : 48
+  const radiusB = answer === 'A' ? 48 : 34
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-drum-pitch-${answer}`,
+    familyKey: 'mechanical-drum-pitch',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'When struck, which drum will make a higher-pitched sound?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Drum comparison</strong></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" style="display:block;margin-top:10px;">
+          ${drumSvg(125, 120, radiusA, 'A')}
+          ${drumSvg(295, 120, radiusB, 'B')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Drum ${answer} is smaller. Smaller vibrating surfaces generally produce a higher pitch than larger ones when the material and tension are otherwise similar.`,
+    pattern: 'For simple sound questions, smaller vibrating bodies usually give higher pitch.',
+  }
+}
+
+function mechanicalPressurePointer(difficulty) {
+  const answer = 'direction A'
+  const options = ['direction A', 'direction B', 'neither']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-pressure-pointer',
+    familyKey: 'mechanical-pressure-pointer',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'If pressure P is raised, in which direction will the pointer turn?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Pressure and pointer</strong></div>
+        <svg viewBox="0 0 420 240" width="100%" height="240" style="display:block;margin-top:10px;">
+          <circle cx="248" cy="108" r="72" fill="#f8fafc" stroke="#111827" stroke-width="3"></circle>
+          <path d="M248 108 L248 48" stroke="#111827" stroke-width="6"></path>
+          <circle cx="248" cy="108" r="8" fill="#111827"></circle>
+          <path d="M186 60 C166 80 166 122 184 142" fill="none" stroke="#111827" stroke-width="3"></path>
+          <polygon points="182,58 172,68 184,72" fill="#111827"></polygon>
+          <text x="168" y="56" font-size="16" font-weight="700">A</text>
+          <path d="M310 60 C330 80 330 122 312 142" fill="none" stroke="#111827" stroke-width="3"></path>
+          <polygon points="314,58 324,68 312,72" fill="#111827"></polygon>
+          <text x="324" y="56" font-size="16" font-weight="700">B</text>
+          <circle cx="176" cy="132" r="18" fill="#d4d4d8" stroke="#52525b" stroke-width="3"></circle>
+          <circle cx="176" cy="132" r="5" fill="#9ca3af"></circle>
+          <path d="M120 176 L120 124 L158 124" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M120 176 L120 196" stroke="#111827" stroke-width="4"></path>
+          <polygon points="120,110 112,124 128,124" fill="#111827"></polygon>
+          <text x="110" y="210" font-size="18" font-weight="700">P</text>
+          <line x1="194" y1="122" x2="216" y2="122" stroke="#111827" stroke-width="4"></line>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'Raising pressure pushes the rack upward. That makes the small gear rotate clockwise, which makes the large pointer wheel rotate counterclockwise, matching direction A.',
+    pattern: 'For rack-and-gear systems, first decide the gear direction at the point of contact, then reverse the direction again for each meshing gear.',
+  }
+}
+
+function mechanicalShelfBracket(difficulty) {
+  const answer = pick(['A', 'B', 'C'])
+  const heights = {
+    A: answer === 'A' ? 72 : answer === 'B' ? 56 : 46,
+    B: answer === 'B' ? 72 : answer === 'A' ? 56 : 46,
+    C: answer === 'C' ? 72 : 46,
+  }
+  const options = ['A', 'B', 'C']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-shelf-bracket-${answer}`,
+    familyKey: 'mechanical-shelf-bracket',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which of the three shelves could carry the heaviest weight?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Shelf support</strong></div>
+        <svg viewBox="0 0 430 210" width="100%" height="210" style="display:block;margin-top:10px;">
+          ${shelfBracketSvg(105, 'A', heights.A)}
+          ${shelfBracketSvg(215, 'B', heights.B)}
+          ${shelfBracketSvg(325, 'C', heights.C)}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Shelf ${answer} has the largest, stiffest triangular support. A deeper triangle spreads the load better and resists bending more effectively.`,
+    pattern: 'Triangulated supports become stronger when the brace gives a larger, deeper triangle.',
+  }
+}
+
+function mechanicalCurveSkid(difficulty) {
+  const answer = 'B'
+  const options = ['A', 'B', 'No difference']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-curve-skid',
+    familyKey: 'mechanical-curve-skid',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'If both cars travel at the same speed, which car is more likely to skid?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Cars on a bend</strong></div>
+        <svg viewBox="0 0 420 210" width="100%" height="210" style="display:block;margin-top:10px;">
+          <path d="M60 165 Q150 65 350 80" fill="none" stroke="#9ca3af" stroke-width="16"></path>
+          <path d="M95 182 Q168 95 335 106" fill="none" stroke="#cbd5e1" stroke-width="3" stroke-dasharray="10 8"></path>
+          <path d="M44 145 Q136 35 366 50" fill="none" stroke="#cbd5e1" stroke-width="3"></path>
+          ${carSvg(132, 118, 0.9)}
+          ${carSvg(195, 126, 0.9)}
+          <text x="130" y="112" font-size="16" font-weight="700">A</text>
+          <text x="193" y="120" font-size="16" font-weight="700">B</text>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'Car B is on the tighter inside radius. At the same speed, the tighter curve needs more centripetal force, so B is more likely to skid.',
+    pattern: 'At equal speed, a smaller turning radius needs more sideways grip and is more likely to skid first.',
+  }
+}
+
+function mechanicalFanDriveDirection(difficulty) {
+  const crossed = Math.random() < 0.5
+  const answer = crossed ? 'B' : 'A'
+  const options = ['A', 'B', 'either']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-fan-drive-direction-${crossed ? 'crossed' : 'open'}`,
+    familyKey: 'mechanical-fan-drive-direction',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'When shaft X turns in the direction shown, which way will the fan blades turn?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Belt and gear drive</strong></div>
+        <svg viewBox="0 0 430 240" width="100%" height="240" style="display:block;margin-top:10px;">
+          ${beltPulleySvg(318, 80, 30, 'X')}
+          ${beltPulleySvg(238, 162, 22, '')}
+          <path d="${crossed ? 'M 296 58 C 280 86 264 112 248 140 M 340 58 C 322 86 304 112 228 178' : 'M 296 58 C 276 86 260 114 246 140 M 340 58 C 322 92 308 126 264 184'}" fill="none" stroke="#111827" stroke-width="4"></path>
+          ${gearCogSvg(174, 162, 22, '')}
+          ${fanBladeSvg(106, 162)}
+          <line x1="216" y1="162" x2="196" y2="162" stroke="#111827" stroke-width="2"></line>
+          <line x1="128" y1="162" x2="152" y2="162" stroke="#111827" stroke-width="5"></line>
+          <path d="M 318 40 C 338 52 338 94 320 112" fill="none" stroke="#111827" stroke-width="4"></path>
+          <polygon points="320,38 330,46 318,51" fill="#111827"></polygon>
+          <path d="M 84 122 C 62 140 62 184 84 202" fill="none" stroke="#111827" stroke-width="4"></path>
+          <polygon points="82,120 72,129 84,133" fill="#111827"></polygon>
+          <text x="60" y="178" font-size="16" font-weight="700">A</text>
+          <path d="M 126 122 C 148 140 148 184 126 202" fill="none" stroke="#111827" stroke-width="4"></path>
+          <polygon points="128,120 138,129 126,133" fill="#111827"></polygon>
+          <text x="152" y="178" font-size="16" font-weight="700">B</text>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `The belt is ${crossed ? 'crossed, so it reverses' : 'open, so it keeps'} the rotation between X and the lower shaft. The final gear mesh reverses the direction once more, so the fan turns in direction ${answer}.`,
+    pattern: 'Open belts keep direction, crossed belts reverse it, and each gear mesh reverses it again.',
+  }
+}
+
+function mechanicalBulbPower(difficulty) {
+  const scenario = pick([
+    { pair: [30, 30], single: 60, answer: 'the same electricity is spent' },
+    { pair: [20, 20], single: 60, answer: 'in bulb 2' },
+    { pair: [40, 40], single: 60, answer: 'in the two bulbs 1' },
+  ])
+  const options = ['in the two bulbs 1', 'in bulb 2', 'the same electricity is spent']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bulb-power-${scenario.pair.join('-')}-${scenario.single}`,
+    familyKey: 'mechanical-bulb-power',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Where is the most electricity spent?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Power use</strong></div>
+        <svg viewBox="0 0 420 210" width="100%" height="210" style="display:block;margin-top:10px;">
+          ${wattBulbSvg(120, 115, 36, '1', scenario.pair[0])}
+          ${wattBulbSvg(178, 126, 28, '', scenario.pair[1])}
+          ${wattBulbSvg(300, 108, 48, '2', scenario.single)}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.answer === 'the same electricity is spent'
+      ? `The two bulbs marked 1 use ${scenario.pair[0]} + ${scenario.pair[1]} = ${scenario.single} watts in total, which is the same as bulb 2.`
+      : scenario.answer === 'in the two bulbs 1'
+        ? `The pair of bulbs 1 use ${scenario.pair[0]} + ${scenario.pair[1]} = ${scenario.pair[0] + scenario.pair[1]} watts, which is more than bulb 2 at ${scenario.single} watts.`
+        : `Bulb 2 uses ${scenario.single} watts, which is more than the two bulbs 1 together at ${scenario.pair[0] + scenario.pair[1]} watts.`,
+    pattern: 'For power questions, add the wattages on one side and compare the totals directly.',
+  }
+}
+
+function mechanicalLadderStability(difficulty) {
+  const answer = pick(['1', '2', '3'])
+  const widths = {
+    1: answer === '1' ? 58 : answer === '2' ? 42 : 48,
+    2: answer === '2' ? 58 : answer === '3' ? 42 : 48,
+    3: answer === '3' ? 58 : 42,
+  }
+  const options = ['1', '2', '3']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-ladder-stability-${answer}`,
+    familyKey: 'mechanical-ladder-stability',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which stepladder stands most solidly?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Stepladder stability</strong></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" style="display:block;margin-top:10px;">
+          ${stepLadderSvg(110, widths[1], '1')}
+          ${stepLadderSvg(210, widths[2], '2')}
+          ${stepLadderSvg(310, widths[3], '3')}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Ladder ${answer} has the widest base, so its center of support is larger and it stands most solidly.`,
+    pattern: 'A wider base usually gives better stability because it keeps the center of mass inside the support area more easily.',
+  }
+}
+
+function mechanicalPulleyRank(difficulty) {
+  const answer = pick(['1', '2', '3'])
+  const segments = {
+    1: answer === '1' ? 4 : answer === '2' ? 2 : 1,
+    2: answer === '2' ? 4 : answer === '3' ? 2 : 1,
+    3: answer === '3' ? 4 : 1,
+  }
+  const options = ['1', '2', '3']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-pulley-rank-${answer}`,
+    familyKey: 'mechanical-pulley-rank',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which of the three weights can be lifted with the lowest effort?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Pulley systems</strong></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" style="display:block;margin-top:10px;">
+          ${rankPulleySvg(100, '1', segments[1])}
+          ${rankPulleySvg(210, '2', segments[2])}
+          ${rankPulleySvg(320, '3', segments[3])}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `System ${answer} has the most supporting rope segments, so it gives the greatest mechanical advantage and needs the least effort.`,
+    pattern: 'Count how many rope segments support the load: more support segments means less force is needed.',
+  }
+}
+
+function mechanicalBalanceHeaviest(difficulty) {
+  const answer = pick(['1', '2', '3'])
+  const positions = {
+    1: answer === '1' ? 78 : answer === '2' ? 58 : 42,
+    2: answer === '2' ? 78 : answer === '3' ? 58 : 42,
+    3: answer === '3' ? 78 : 42,
+  }
+  const options = ['1', '2', '3']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-balance-heaviest-${answer}`,
+    familyKey: 'mechanical-balance-heaviest',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which box is the heaviest?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Balance scales</strong></div>
+        <svg viewBox="0 0 420 230" width="100%" height="230" style="display:block;margin-top:10px;">
+          ${balanceScaleSvg(110, '1', positions[1])}
+          ${balanceScaleSvg(210, '2', positions[2])}
+          ${balanceScaleSvg(310, '3', positions[3])}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `On each balance the same sliding counterweight is used. The heaviest box needs that counterweight farthest from the pivot, so box ${answer} is the heaviest.`,
+    pattern: 'With the same counterweight, the heavier load needs the counterweight farther from the pivot to balance.',
+  }
+}
+
+function mechanicalChainLoad(difficulty) {
+  const answer = pick(['1', '2', '3'])
+  const topHeights = {
+    1: answer === '1' ? 34 : answer === '2' ? 58 : 82,
+    2: answer === '2' ? 34 : answer === '3' ? 58 : 82,
+    3: answer === '3' ? 34 : 82,
+  }
+  const options = ['1', '2', '3']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-chain-load-${answer}`,
+    familyKey: 'mechanical-chain-load',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which chain is exposed to the highest load?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Chain support load</strong></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" style="display:block;margin-top:10px;">
+          ${chainLoadSvg(105, '1', topHeights[1])}
+          ${chainLoadSvg(210, '2', topHeights[2])}
+          ${chainLoadSvg(315, '3', topHeights[3])}
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `Chain ${answer} is the flattest. A flatter supporting chain must carry more tension to hold the same downward load.`,
+    pattern: 'For the same load, the more horizontal the chain or cable, the higher the tension in it.',
+  }
+}
+
+function mechanicalWaterOverflowLevel(difficulty) {
+  const answer = pick(['A', 'B', 'C'])
+  const yMap = { A: 92, B: 122, C: 152 }
+  const options = ['A', 'B', 'C']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-water-overflow-level-${answer}`,
+    familyKey: 'mechanical-water-overflow-level',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'What level in the can must the water reach in order to start pouring out of the tube?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Can and overflow tube</strong></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" style="display:block;margin-top:10px;">
+          <rect x="152" y="46" width="90" height="126" rx="6" fill="#f8fafc" stroke="#111827" stroke-width="3"></rect>
+          <line x1="152" y1="92" x2="242" y2="92" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"></line>
+          <line x1="152" y1="122" x2="242" y2="122" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"></line>
+          <line x1="152" y1="152" x2="242" y2="152" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"></line>
+          <text x="140" y="96" font-size="16" font-weight="700">A</text>
+          <text x="140" y="126" font-size="16" font-weight="700">B</text>
+          <text x="140" y="156" font-size="16" font-weight="700">C</text>
+          <path d="M242 ${yMap[answer]} L270 ${yMap[answer]} C292 ${yMap[answer]} 292 ${yMap[answer] - 18} 292 ${yMap[answer] - 18} C292 ${yMap[answer] - 18} 302 ${yMap[answer] - 18} 302 ${yMap[answer] + 4} C302 ${yMap[answer] + 26} 320 ${yMap[answer] + 26} 330 ${yMap[answer] + 10}" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M80 54 L128 54" stroke="#475569" stroke-width="5"></path>
+          <path d="M145 54 L145 74" stroke="#475569" stroke-width="5"></path>
+          <path d="M145 74 L174 74" stroke="#475569" stroke-width="5"></path>
+          <circle cx="136" cy="54" r="7" fill="#f8fafc" stroke="#111827" stroke-width="3"></circle>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: `The water must rise to the height of the tube opening inside the can. In this picture that opening is at level ${answer}, so flow starts there.`,
+    pattern: 'Water starts leaving once the level reaches the inlet height of the outlet path inside the container.',
+  }
+}
+
+function mechanicalWheelDirectionPair(difficulty) {
+  const answer = '4 and 5'
+  const options = ['4 and 5', '1 and 2', '3 and 5']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: 'mechanical-wheel-direction-pair',
+    familyKey: 'mechanical-wheel-direction-pair',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which two wheels turn in the same direction as drive wheel A?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Wheel and belt system</strong></div>
+        <svg viewBox="0 0 430 230" width="100%" height="230" style="display:block;margin-top:10px;">
+          ${beltPulleySvg(340, 126, 22, 'A')}
+          ${beltPulleySvg(278, 94, 22, '5')}
+          ${beltPulleySvg(244, 156, 18, '4')}
+          ${beltPulleySvg(172, 156, 18, '3')}
+          ${beltPulleySvg(138, 94, 22, '2')}
+          ${beltPulleySvg(172, 48, 18, '1')}
+          <path d="M 320 111 C 306 102 294 100 290 104 M 358 111 C 342 102 320 96 296 86" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M 264 94 C 250 116 246 128 246 138 M 292 94 C 282 120 272 140 262 156" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M 226 156 L 190 156 M 262 156 L 190 156" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M 156 94 C 162 116 166 130 168 138 M 120 94 C 128 116 138 134 150 156" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M 154 82 C 164 74 168 68 170 62 M 122 82 C 132 70 142 60 158 54" fill="none" stroke="#111827" stroke-width="4"></path>
+          <path d="M 358 126 C 374 138 374 154 358 168" fill="none" stroke="#111827" stroke-width="4"></path>
+          <polygon points="358,124 368,132 356,137" fill="#111827"></polygon>
+        </svg>
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(answer),
+    explanation: 'Wheel A drives 5 with an open belt, so 5 turns the same way. Wheel 5 drives 4 with another open belt, so 4 also turns the same way. The later links reverse the direction for the other wheels.',
+    pattern: 'Track direction stage by stage. Open belts keep direction, while reversing links flip it.',
+  }
 }
 function oppositeDirection(direction) {
   return direction === 'Clockwise' ? 'Counterclockwise' : 'Clockwise'

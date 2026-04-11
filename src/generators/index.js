@@ -1,5 +1,6 @@
 import { questionFamilySignature, questionSignature, questionTemplateSignature } from '../engine-core'
 import { generateErrorCheck } from './errorCheck'
+import { generateGerman } from './german'
 import { generateMechanical } from './mechanical'
 import { generateNumerical, pieSvg } from './numerical'
 import { generateConcentration, generateDiagrammatic, generateLogical, generatePlanning } from './reasoning'
@@ -57,6 +58,7 @@ export function generateQuestion(topic, difficulty, mode, language = 'en') {
     case 'logical': return generateLogical(difficulty, mode)
     case 'concentration': return generateConcentration(difficulty, mode)
     case 'planning': return generatePlanning(difficulty, mode)
+    case 'german': return generateGerman(difficulty, mode)
     case 'quantitative': return generateQuantitative(difficulty, mode)
     case 'mechanical': return generateMechanical(difficulty, mode)
     case 'mixed': return generateQuantitative(difficulty, mode)
@@ -68,6 +70,7 @@ export {
   generateConcentration,
   generateDiagrammatic,
   generateErrorCheck,
+  generateGerman,
   generateLogical,
   generateMechanical,
   generateNumerical,

@@ -3,6 +3,7 @@ export {
   generateConcentration,
   generateDiagrammatic,
   generateErrorCheck,
+  generateGerman,
   generateLogical,
   generateMechanical,
   generateNumerical,

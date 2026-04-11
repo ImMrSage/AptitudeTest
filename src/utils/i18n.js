@@ -1,22 +1,24 @@
 const TOPIC_LABELS = {
   en: {
     numerical: 'Numerical reasoning',
-    verbal: 'Verbal reasoning',
-    logical: 'Abstract / diagrammatic reasoning',
-    concentration: 'Concentration',
-    planning: 'Planning',
     quantitative: 'AP Quantitative',
+    logical: 'Abstract / diagrammatic reasoning',
     mechanical: 'Mechanical reasoning',
+    verbal: 'Verbal reasoning',
+    planning: 'Planning',
+    concentration: 'Concentration',
+    german: 'German language',
     mixed: 'Assessment Mix',
   },
   de: {
     numerical: 'Numerisches Denken',
-    verbal: 'Verbales Denken',
-    logical: 'Abstraktes / diagrammatisches Denken',
-    concentration: 'Konzentration',
-    planning: 'Planung',
     quantitative: 'AP Quantitatives Denken',
+    logical: 'Abstraktes / diagrammatisches Denken',
     mechanical: 'Mechanisches Verstaendnis',
+    verbal: 'Verbales Denken',
+    planning: 'Planung',
+    concentration: 'Konzentration',
+    german: 'Deutschkenntnisse',
     mixed: 'Assessment-Mix',
   },
 }
@@ -1065,19 +1067,29 @@ export function getDifficultyLabel(language = 'en', difficulty) {
 
 export function localizeQuestion(question, language = 'en') {
   if (!question || language === 'en') return question
+  const direct = question.translations && question.translations[language] ? question.translations[language] : null
+  const normalizeDirect = value => {
+    if (value == null) return value
+    return language === 'de' ? restoreGermanCharacters(value) : value
+  }
+  const localizedOptions = direct && Array.isArray(direct.options) ? direct.options : null
 
   return {
     ...question,
     topicLabel: topicLabel(question.topic, language),
-    prompt: translateGeneratedText(question.prompt, language),
-    subtext: translateGeneratedText(question.subtext, language),
-    visualHtml: translateGeneratedText(question.visualHtml, language),
-    options: (question.options || []).map(option => ({
+    prompt: direct && direct.prompt != null ? normalizeDirect(direct.prompt) : translateGeneratedText(question.prompt, language),
+    subtext: direct && direct.subtext != null ? normalizeDirect(direct.subtext) : translateGeneratedText(question.subtext, language),
+    visualHtml: direct && direct.visualHtml != null ? normalizeDirect(direct.visualHtml) : translateGeneratedText(question.visualHtml, language),
+    explanation: direct && direct.explanation != null ? normalizeDirect(direct.explanation) : translateGeneratedText(question.explanation, language),
+    pattern: direct && direct.pattern != null ? normalizeDirect(direct.pattern) : translateGeneratedText(question.pattern, language),
+    options: (question.options || []).map((option, index) => {
+      const directOption = localizedOptions && localizedOptions[index] ? localizedOptions[index] : null
+      return ({
       ...option,
-      text: translateGeneratedText(option.text, language),
-      plain: translateGeneratedText(option.plain, language),
-      html: translateGeneratedText(option.html, language),
-    })),
+      text: directOption && directOption.text != null ? normalizeDirect(directOption.text) : translateGeneratedText(option.text, language),
+      plain: directOption && directOption.plain != null ? normalizeDirect(directOption.plain) : translateGeneratedText(option.plain, language),
+      html: directOption && directOption.html != null ? normalizeDirect(directOption.html) : translateGeneratedText(option.html, language),
+    })}),
   }
 }
 

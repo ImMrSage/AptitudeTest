@@ -6,7 +6,7 @@ import {
   generateSession,
   questionTemplateSignature,
 } from '../engine'
-import { topicLabel } from '../utils/i18n'
+import { topicLabel, translateGeneratedText } from '../utils/i18n'
 
 export function useTrainerSession() {
   const [state, setState] = useState(() => createInitialState())
@@ -115,10 +115,18 @@ export function useTrainerSession() {
     ? '--:--'
     : formatTime(state.secondsLeft)
 
-  const detailedExplanationHtml = useMemo(
-    () => (currentQuestion ? buildDetailedExplanationHtml(currentQuestion) || currentQuestion.explanation : ''),
-    [currentQuestion],
-  )
+  const detailedExplanationHtml = useMemo(() => {
+    if (!currentQuestion) return ''
+    const builtExplanation = buildDetailedExplanationHtml(currentQuestion)
+    if (builtExplanation) {
+      return state.language === 'en' ? builtExplanation : translateGeneratedText(builtExplanation, state.language)
+    }
+    const directExplanation = currentQuestion.translations && currentQuestion.translations[state.language]
+      ? currentQuestion.translations[state.language].explanation
+      : null
+    const explanation = directExplanation || currentQuestion.explanation
+    return state.language === 'en' ? explanation : translateGeneratedText(explanation, state.language)
+  }, [currentQuestion, state.language])
 
   const summaryScore = state.answers.filter((answer, index) => answer && answer.answerIndex === state.questions[index].correctIndex).length
   const summaryAccuracy = state.answers.length ? Math.round((summaryScore / state.answers.length) * 100) : 0

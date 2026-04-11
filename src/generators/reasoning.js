@@ -8,6 +8,13 @@ const SWITCH_SYMBOL_SET = [
   { key: 'square', label: 'red square', shape: 'square', color: '#e1443d' },
   { key: 'circle', label: 'green circle', shape: 'circle', color: '#72b635' },
 ]
+const GAP_SYMBOL_SET = [
+  { key: 'triangle', label: 'yellow triangle', deLabel: 'gelbes Dreieck', color: '#d4a514' },
+  { key: 'plus', label: 'blue plus', deLabel: 'blaues Plus', color: '#57c5f7' },
+  { key: 'square', label: 'red square', deLabel: 'rotes Quadrat', color: '#e1443d' },
+  { key: 'circle', label: 'green circle', deLabel: 'gruener Kreis', color: '#72b635' },
+  { key: 'star', label: 'purple star', deLabel: 'lila Stern', color: '#6c4ed9' },
+]
 const PERMUTATION_CODES = buildPermutationCodes()
 
 export function generateDiagrammatic(difficulty) {
@@ -213,10 +220,10 @@ export function diagShading(difficulty) {
 
 export function generateLogical(difficulty) {
   const types = difficulty === 'easy'
-    ? ['symmetry', 'code-switch', 'code-switch', 'number-series']
+    ? ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix']
     : difficulty === 'medium'
-    ? ['symmetry', 'code-switch', 'code-switch', 'code-switch', 'number-series', 'surface-count']
-    : ['symmetry', 'matrix', 'code-switch', 'code-switch', 'code-switch', 'number-series', 'number-series', 'surface-count', 'surface-count']
+    ? ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'code-switch']
+    : ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'matrix', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'number-series']
   const type = pick(types)
   const question = type === 'symmetry'
     ? logicalSymmetry(difficulty)
@@ -226,6 +233,8 @@ export function generateLogical(difficulty) {
     ? logicalNumberSeries(difficulty)
     : type === 'surface-count'
     ? logicalSurfaceCount(difficulty)
+    : type === 'gap-challenge'
+    ? logicalGapChallenge(difficulty)
     : logicalCodeSwitch(difficulty)
 
   return {
@@ -241,77 +250,85 @@ export function generateLogical(difficulty) {
 
 export function logicalSymmetry(difficulty) {
   const axis = pick(['vertical', 'horizontal'])
-  const leftShapes = ['&#9698;', '&#9699;', '&#9700;', '&#9701;', '&#9703;', '&#9704;']
-  const pairMap = axis === 'vertical'
-    ? { '&#9698;': '&#9699;', '&#9699;': '&#9698;', '&#9700;': '&#9701;', '&#9701;': '&#9700;', '&#9703;': '&#9704;', '&#9704;': '&#9703;' }
-    : { '&#9698;': '&#9700;', '&#9700;': '&#9698;', '&#9699;': '&#9701;', '&#9701;': '&#9699;', '&#9703;': '&#9703;', '&#9704;': '&#9704;' }
-  const seed = pick(leftShapes)
-  const answer = pairMap[seed]
-  const options = shuffle([answer, ...Object.values(pairMap).filter(value => value !== answer)]).slice(0, 4)
-  const correctIndex = options.indexOf(answer)
-  const visualHtml = `
-    <div class="chart">
-      <div class="center"><strong>Symmetry</strong></div>
-      <div class="diagram-grid" style="grid-template-columns:repeat(3, 1fr);max-width:340px;margin-left:auto;margin-right:auto;">
-        <div class="diagram-cell">${seed}</div>
-        <div class="diagram-cell" style="font-size:18px;color:#64748b;">${axis === 'vertical' ? '|' : '&mdash;'}</div>
-        <div class="diagram-cell missing">?</div>
-      </div>
-      <div class="small center mt8">Choose the figure that is the mirror image across the ${axis} axis.</div>
-    </div>
-  `
+  const gridSize = difficulty === 'easy' ? 4 : pick([4, 5])
+  const rowCount = difficulty === 'hard' ? 3 : 2
+  const rows = Array.from({ length: rowCount + 1 }, (_, index) => {
+    const source = buildSymmetryPattern(axis, gridSize, 3 + index)
+    return {
+      source,
+      mirrored: mirrorPatternPoints(source, axis, gridSize),
+    }
+  })
+  const missingSide = difficulty === 'hard' ? pick(['left', 'right']) : 'right'
+  const missingRow = rows.length - 1
+  const answerPattern = missingSide === 'right' ? rows[missingRow].mirrored : rows[missingRow].source
+  const distractors = buildSymmetryDistractors({
+    answerPattern,
+    sourcePattern: rows[missingRow].source,
+    axis,
+    gridSize,
+  })
+  const options = shuffle([answerPattern, ...distractors])
+  const correctIndex = options.findIndex(option => patternKey(option) === patternKey(answerPattern))
+  const visualHtml = renderSymmetryChallenge({
+    axis,
+    gridSize,
+    missingRow,
+    missingSide,
+    rows,
+    title: 'Symmetry matrix',
+  })
 
   return {
     topic: 'logical',
     topicLabel: LOGICAL_TOPIC_LABEL,
-    variantKey: `symmetry-${axis}`,
+    familyKey: 'logical-symmetry',
+    variantKey: `symmetry-${axis}-${gridSize}-${missingSide}-${rows.map(row => patternKey(row.source)).join('_')}`,
     timer: getTimerSeconds('logical', difficulty),
-    prompt: 'Which option completes the symmetry rule?',
+    prompt: 'Which figure completes the symmetry matrix?',
     visualHtml,
-    options: options.map(value => ({ text: value, plain: value })),
+    options: options.map((pattern, index) => ({
+      html: renderPatternGrid(pattern, gridSize, 12),
+      text: `Option ${index + 1}`,
+      plain: `Pattern ${index + 1}`,
+    })),
     correctIndex,
-    explanation: `Reflect the figure across the ${axis} axis, so the filled corner moves to the mirrored side.`,
-    pattern: 'In symmetry questions, keep the shape the same and flip only its orientation across the stated axis.',
+    explanation: `In each row, the figure on one side is the mirror image of the figure on the other side across the ${axis} axis. Reflect the missing row across that axis to get the correct block pattern.`,
+    pattern: 'For symmetry matrices, compare complete example rows first. Then mirror the missing figure cell-by-cell across the shown axis.',
+    translations: {
+      de: {
+        prompt: 'Welche Figur vervollstaendigt die Symmetrie-Matrix?',
+        explanation: `In jeder Zeile ist die Figur auf einer Seite das Spiegelbild der Figur auf der anderen Seite an der ${axis === 'vertical' ? 'vertikalen' : 'horizontalen'} Achse. Spiegele die fehlende Zeile an dieser Achse, um das richtige Muster zu erhalten.`,
+        pattern: 'Bei Symmetrie-Matrizen zuerst die vollstaendigen Beispielzeilen vergleichen. Dann die fehlende Figur Feld fuer Feld an der gezeigten Achse spiegeln.',
+      },
+    },
   }
 }
 export function logicalMatrix(difficulty) {
-  const rows = [
-    ['&#9650;', '&#9650;&#9650;', '&#9650;&#9650;&#9650;'],
-    ['&#9679;', '&#9679;&#9679;', '&#9679;&#9679;&#9679;'],
-  ]
-  const answerBase = pick(['&#9632;', '&#9670;'])
-  const thirdRow = [answerBase, answerBase + answerBase, answerBase + answerBase + answerBase]
-  const options = shuffle([
-    thirdRow[2],
-    thirdRow[1],
-    answerBase,
-    answerBase + answerBase + answerBase + answerBase,
+  const scenario = pick([
+    buildCountFillMatrixScenario(difficulty),
+    buildShapeRotationMatrixScenario(difficulty),
   ])
-  const correctIndex = options.indexOf(thirdRow[2])
-  const visualHtml = `
-    <div class="chart">
-      <div class="center"><strong>Matrix completion</strong></div>
-      <div class="diagram-grid" style="grid-template-columns:repeat(3, 1fr);">
-        ${rows[0].map(cell => `<div class="diagram-cell">${cell}</div>`).join('')}
-        ${rows[1].map(cell => `<div class="diagram-cell">${cell}</div>`).join('')}
-        <div class="diagram-cell">${thirdRow[0]}</div>
-        <div class="diagram-cell">${thirdRow[1]}</div>
-        <div class="diagram-cell missing">?</div>
-      </div>
-    </div>
-  `
 
   return {
     topic: 'logical',
     topicLabel: LOGICAL_TOPIC_LABEL,
-    variantKey: `matrix-${answerBase}`,
+    familyKey: 'logical-matrix',
+    variantKey: scenario.variantKey,
     timer: getTimerSeconds('logical', difficulty),
     prompt: 'Which option completes the 3x3 matrix?',
-    visualHtml,
-    options: options.map(value => ({ text: value, plain: value })),
-    correctIndex,
-    explanation: 'Each row keeps the same shape while each column increases the number of symbols from 1 to 3.',
-    pattern: 'For matrix questions, check what changes by row and what changes by column separately.',
+    visualHtml: scenario.visualHtml,
+    options: scenario.options,
+    correctIndex: scenario.correctIndex,
+    explanation: scenario.explanation,
+    pattern: scenario.pattern,
+    translations: {
+      de: {
+        prompt: 'Welche Option vervollstaendigt die 3x3-Matrix?',
+        explanation: scenario.deExplanation,
+        pattern: scenario.dePattern,
+      },
+    },
   }
 }
 
@@ -438,6 +455,7 @@ function logicalNumberSeries(difficulty) {
   return {
     topic: 'logical',
     topicLabel: LOGICAL_TOPIC_LABEL,
+    familyKey: 'logical-number-series',
     variantKey: `number-series-${scenario.key}`,
     timer: getTimerSeconds('logical', difficulty),
     prompt: 'Which number logically continues the number series?',
@@ -635,6 +653,7 @@ function logicalSurfaceCount(difficulty) {
   return {
     topic: 'logical',
     topicLabel: LOGICAL_TOPIC_LABEL,
+    familyKey: 'logical-surface-count',
     variantKey: `surface-count-${scenario.key}`,
     timer: getTimerSeconds('logical', difficulty),
     prompt: 'How many faces does the solid shown have?',
@@ -651,6 +670,97 @@ function logicalSurfaceCount(difficulty) {
     explanation: scenario.explanation,
     explanationHtml: scenario.explanationHtml,
     pattern: 'For spatial face-count tasks, first identify whether the body is a prism, a hollow tube, or a composite solid. Count outer faces systematically, add any interior tunnel faces, and do not count shared internal joins.',
+  }
+}
+
+function logicalGapChallenge(difficulty) {
+  const size = difficulty === 'easy' ? 4 : pick(difficulty === 'medium' ? [4, 5] : [5, 5, 4])
+  const symbols = shuffle([...GAP_SYMBOL_SET]).slice(0, size)
+  const indexes = Array.from({ length: size }, (_, index) => index)
+  const rowOrder = shuffle([...indexes])
+  const colOrder = shuffle([...indexes])
+  const transpose = Math.random() < 0.5
+  const mirror = Math.random() < 0.5
+
+  let board = rowOrder.map(row =>
+    colOrder.map(col => symbols[(row + col) % size]),
+  )
+
+  if (transpose) {
+    board = board[0].map((_, columnIndex) => board.map(row => row[columnIndex]))
+  }
+  if (mirror) {
+    board = board.map(row => [...row].reverse())
+  }
+
+  const questionRow = randInt(0, size - 1)
+  const questionCol = randInt(0, size - 1)
+  const answerSymbol = board[questionRow][questionCol]
+
+  const revealed = new Set()
+  for (let row = 0; row < size; row++) {
+    if (row !== questionRow) revealed.add(`${row}:${questionCol}`)
+  }
+  for (let col = 0; col < size; col++) {
+    if (col !== questionCol) revealed.add(`${questionRow}:${col}`)
+  }
+
+  const extraCells = shuffle(
+    indexes.flatMap(row => indexes.map(col => ({ row, col })))
+      .filter(cell => cell.row !== questionRow || cell.col !== questionCol),
+  )
+  const extraCount = size === 4 ? randInt(3, 4) : randInt(5, 7)
+  for (const cell of extraCells) {
+    if (revealed.size >= ((size - 1) * 2) + extraCount) break
+    revealed.add(`${cell.row}:${cell.col}`)
+  }
+
+  const boardHtml = renderGapBoard({
+    size,
+    board,
+    revealed,
+    questionRow,
+    questionCol,
+    title: 'Gap challenge',
+  })
+  const options = shuffle([...symbols])
+  const correctIndex = options.findIndex(symbol => symbol.key === answerSymbol.key)
+
+  return {
+    topic: 'logical',
+    topicLabel: LOGICAL_TOPIC_LABEL,
+    variantKey: `gap-challenge-${size}-${symbols.map(symbol => symbol.key).join('-')}-${questionRow}-${questionCol}-${transpose ? 't' : 'n'}-${mirror ? 'm' : 'n'}`,
+    timer: getTimerSeconds('logical', difficulty),
+    prompt: 'Which symbol belongs in the missing cell?',
+    visualHtml: boardHtml,
+    options: options.map(symbol => ({
+      html: renderGapSymbol(symbol, 34),
+      text: symbol.label,
+      plain: symbol.label,
+    })),
+    correctIndex,
+    explanation: `Each row and each column must contain each symbol exactly once. Check the missing row and column together: the only symbol that fits both is the ${answerSymbol.label}.`,
+    pattern: 'For gap-challenge grids, scan the missing row and missing column first. The correct symbol is the one that satisfies both row and column uniqueness.',
+    translations: {
+      de: {
+        prompt: 'Welches Symbol gehoert in das fehlende Feld?',
+        visualHtml: renderGapBoard({
+          size,
+          board,
+          revealed,
+          questionRow,
+          questionCol,
+          title: 'Lueckenmuster',
+        }),
+        options: options.map(symbol => ({
+          html: renderGapSymbol(symbol, 34),
+          text: symbol.deLabel,
+          plain: symbol.deLabel,
+        })),
+        explanation: `In jeder Zeile und jeder Spalte darf jedes Symbol genau einmal vorkommen. Wenn Sie die fehlende Zeile und die fehlende Spalte gemeinsam pruefen, passt nur ${answerSymbol.deLabel}.`,
+        pattern: 'Pruefen Sie bei solchen Rasteraufgaben zuerst die fehlende Zeile und die fehlende Spalte. Das richtige Symbol muss beide Bedingungen gleichzeitig erfuellen.',
+      },
+    },
   }
 }
 
@@ -674,6 +784,326 @@ function prismSvg(frontPoints, dx, dy) {
     <polygon points="${backPoints}" fill="#f8fafc" stroke="#64748b" stroke-width="2"></polygon>
     ${connectors}
     <polygon points="${front}" fill="#e5e7eb" stroke="#111827" stroke-width="2.2"></polygon>
+  `
+}
+
+function renderGapBoard({ size, board, revealed, questionRow, questionCol, title }) {
+  const cells = board.map((row, rowIndex) => row.map((symbol, colIndex) => {
+    const key = `${rowIndex}:${colIndex}`
+    if (rowIndex === questionRow && colIndex === questionCol) {
+      return `<div class="diagram-cell missing" style="aspect-ratio:auto;height:56px;font-size:28px;font-weight:800;">?</div>`
+    }
+    if (!revealed.has(key)) {
+      return `<div class="diagram-cell" style="aspect-ratio:auto;height:56px;background:#f8fafc;border-color:#e2e8f0;"></div>`
+    }
+    return `<div class="diagram-cell" style="aspect-ratio:auto;height:56px;">${renderGapSymbol(symbol, 34)}</div>`
+  }).join('')).join('')
+
+  return `
+    <div class="chart">
+      <div class="center"><strong>${title}</strong></div>
+      <div style="display:grid;grid-template-columns:repeat(${size}, 56px);gap:10px;justify-content:center;margin-top:14px;">
+        ${cells}
+      </div>
+    </div>
+  `
+}
+
+function renderGapSymbol(symbol, size = 32) {
+  const viewBox = 100
+  if (symbol.key === 'circle') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${viewBox} ${viewBox}" aria-hidden="true"><circle cx="50" cy="50" r="30" fill="${symbol.color}"></circle></svg>`
+  }
+  if (symbol.key === 'square') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${viewBox} ${viewBox}" aria-hidden="true"><rect x="20" y="20" width="60" height="60" rx="6" fill="${symbol.color}"></rect></svg>`
+  }
+  if (symbol.key === 'triangle') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${viewBox} ${viewBox}" aria-hidden="true"><polygon points="50,16 84,78 16,78" fill="${symbol.color}"></polygon></svg>`
+  }
+  if (symbol.key === 'star') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${viewBox} ${viewBox}" aria-hidden="true"><polygon points="50,12 60,36 86,38 66,54 72,80 50,65 28,80 34,54 14,38 40,36" fill="${symbol.color}"></polygon></svg>`
+  }
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${viewBox} ${viewBox}" aria-hidden="true"><rect x="38" y="16" width="24" height="68" rx="5" fill="${symbol.color}"></rect><rect x="16" y="38" width="68" height="24" rx="5" fill="${symbol.color}"></rect></svg>`
+}
+
+function buildCountFillMatrixScenario(difficulty) {
+  const rowShapes = shuffle(['triangle', 'circle', 'square', 'diamond']).slice(0, 3)
+  const countSeries = pick(
+    difficulty === 'easy'
+      ? [[1, 2, 3], [2, 3, 4]]
+      : [[1, 2, 3], [2, 3, 4], [2, 4, 6]]
+  )
+  const fillMode = pick(['checker', 'column'])
+  const missingIndex = pick(difficulty === 'easy' ? [5, 7, 8] : [4, 5, 6, 7, 8])
+  const cells = Array.from({ length: 9 }, (_, index) => {
+    const row = Math.floor(index / 3)
+    const col = index % 3
+    return {
+      shape: rowShapes[row],
+      count: countSeries[col],
+      fill: fillMode === 'checker'
+        ? ((row + col) % 2 === 0 ? 'solid' : 'outline')
+        : (col % 2 === 0 ? 'solid' : 'outline'),
+      rotation: 0,
+    }
+  })
+  const correctCell = cells[missingIndex]
+  const distractors = dedupeMatrixCells([
+    { ...correctCell, fill: correctCell.fill === 'solid' ? 'outline' : 'solid' },
+    { ...correctCell, count: countSeries[(missingIndex + 1) % 3] },
+    { ...correctCell, shape: rowShapes[(Math.floor(missingIndex / 3) + 1) % 3] },
+    { ...correctCell, count: Math.max(1, correctCell.count + (correctCell.count > countSeries[0] ? -1 : 1)) },
+  ], matrixCellKey).slice(0, difficulty === 'easy' ? 3 : 4)
+  const options = shuffle([correctCell, ...distractors]).slice(0, difficulty === 'easy' ? 4 : 5)
+  const correctIndex = options.findIndex(option => matrixCellKey(option) === matrixCellKey(correctCell))
+
+  return {
+    variantKey: `matrix-count-fill-${rowShapes.join('-')}-${countSeries.join('-')}-${fillMode}-${missingIndex}`,
+    visualHtml: renderMatrixBoard({
+      title: 'Matrix completion',
+      cells,
+      missingIndex,
+    }),
+    options: options.map((cell, index) => ({
+      html: renderMatrixOption(cell),
+      text: `Option ${index + 1}`,
+      plain: describeMatrixCell(cell),
+    })),
+    correctIndex,
+    explanation: `Each row keeps the same shape family, each column changes the number of symbols to ${countSeries.join(', ')}, and the fill style follows a ${fillMode === 'checker' ? 'checkerboard' : 'column-by-column'} pattern.`,
+    deExplanation: `Jede Zeile behaelt dieselbe Formfamilie, jede Spalte aendert die Anzahl der Symbole zu ${countSeries.join(', ')}, und die Fuellung folgt einem ${fillMode === 'checker' ? 'Schachbrettmuster' : 'spaltenweisen'} Muster.`,
+    pattern: 'For matrix questions, isolate one rule for rows and a different rule for columns. Then check whether fill or shading adds a third rule.',
+    dePattern: 'Bei Matrixaufgaben zuerst eine Regel fuer die Zeilen und eine andere fuer die Spalten trennen. Danach pruefen, ob Fuellung oder Schattierung noch eine dritte Regel bilden.',
+  }
+}
+
+function buildShapeRotationMatrixScenario(difficulty) {
+  const rowShapes = shuffle(['triangle', 'bar', 'diamond', 'square']).slice(0, 3)
+  const rowCounts = difficulty === 'easy' ? [1, 2, 3] : pick([[1, 2, 3], [2, 3, 4]])
+  const rotations = pick([[0, 90, 180], [45, 135, 225]])
+  const fills = pick(['row-band', 'checker'])
+  const missingIndex = pick(difficulty === 'easy' ? [5, 7, 8] : [4, 5, 6, 7, 8])
+  const cells = Array.from({ length: 9 }, (_, index) => {
+    const row = Math.floor(index / 3)
+    const col = index % 3
+    return {
+      shape: rowShapes[row],
+      count: rowCounts[row],
+      fill: fills === 'row-band'
+        ? (row % 2 === 0 ? 'solid' : 'outline')
+        : ((row + col) % 2 === 0 ? 'solid' : 'outline'),
+      rotation: rotations[col],
+    }
+  })
+  const correctCell = cells[missingIndex]
+  const distractors = dedupeMatrixCells([
+    { ...correctCell, rotation: rotations[(missingIndex + 1) % 3] },
+    { ...correctCell, count: rowCounts[(Math.floor(missingIndex / 3) + 1) % 3] },
+    { ...correctCell, shape: rowShapes[(Math.floor(missingIndex / 3) + 1) % 3] },
+    { ...correctCell, fill: correctCell.fill === 'solid' ? 'outline' : 'solid' },
+  ], matrixCellKey).slice(0, difficulty === 'easy' ? 3 : 4)
+  const options = shuffle([correctCell, ...distractors]).slice(0, difficulty === 'easy' ? 4 : 5)
+  const correctIndex = options.findIndex(option => matrixCellKey(option) === matrixCellKey(correctCell))
+
+  return {
+    variantKey: `matrix-rotation-${rowShapes.join('-')}-${rowCounts.join('-')}-${rotations.join('-')}-${fills}-${missingIndex}`,
+    visualHtml: renderMatrixBoard({
+      title: 'Matrix completion',
+      cells,
+      missingIndex,
+    }),
+    options: options.map((cell, index) => ({
+      html: renderMatrixOption(cell),
+      text: `Option ${index + 1}`,
+      plain: describeMatrixCell(cell),
+    })),
+    correctIndex,
+    explanation: `Each row keeps the same shape and count, while each column rotates the figure through ${rotations.join('°, ')}°. The fill style follows a ${fills === 'row-band' ? 'row-based' : 'checkerboard'} pattern.`,
+    deExplanation: `Jede Zeile behaelt dieselbe Form und Anzahl, waehrend jede Spalte die Figur um ${rotations.join('°, ')}° weiterdreht. Die Fuellung folgt einem ${fills === 'row-band' ? 'zeilenbasierten' : 'Schachbrett'} Muster.`,
+    pattern: 'Harder matrices often combine two visible rules with a third styling rule. Track shape/count first, then confirm rotation or fill.',
+    dePattern: 'Schwierigere Matrizen kombinieren oft zwei sichtbare Regeln mit einer dritten Stilregel. Erst Form und Anzahl verfolgen, dann Rotation oder Fuellung bestaetigen.',
+  }
+}
+
+function renderMatrixBoard({ title, cells, missingIndex }) {
+  return `
+    <div class="chart">
+      <div class="center"><strong>${title}</strong></div>
+      <div class="diagram-grid" style="grid-template-columns:repeat(3, 1fr);max-width:700px;margin-left:auto;margin-right:auto;">
+        ${cells.map((cell, index) => (
+          index === missingIndex
+            ? '<div class="diagram-cell missing" style="min-height:150px;font-size:32px;">?</div>'
+            : `<div class="diagram-cell" style="min-height:150px;">${renderMatrixCell(cell)}</div>`
+        )).join('')}
+      </div>
+    </div>
+  `
+}
+
+function renderMatrixCell(cell) {
+  return `
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+      ${renderReasoningShapeRow(cell, 26)}
+    </div>
+  `
+}
+
+function renderMatrixOption(cell) {
+  return `
+    <div style="display:flex;align-items:center;justify-content:center;height:52px;">
+      ${renderReasoningShapeRow(cell, 18)}
+    </div>
+  `
+}
+
+function renderReasoningShapeRow(cell, size) {
+  return `
+    <div style="display:flex;gap:${Math.max(6, Math.round(size * 0.22))}px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:100%;">
+      ${Array.from({ length: cell.count }, () => renderReasoningShape(cell.shape, {
+        size,
+        fill: cell.fill,
+        rotation: cell.rotation,
+      })).join('')}
+    </div>
+  `
+}
+
+function renderReasoningShape(shape, { size = 20, fill = 'solid', rotation = 0 }) {
+  const stroke = '#0f172a'
+  const solidFill = fill === 'solid' ? '#0f172a' : '#ffffff'
+  if (shape === 'circle') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="transform:rotate(${rotation}deg);"><circle cx="50" cy="50" r="30" fill="${solidFill}" stroke="${stroke}" stroke-width="8"></circle></svg>`
+  }
+  if (shape === 'square') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="transform:rotate(${rotation}deg);"><rect x="22" y="22" width="56" height="56" fill="${solidFill}" stroke="${stroke}" stroke-width="8"></rect></svg>`
+  }
+  if (shape === 'diamond') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="transform:rotate(${rotation}deg);"><polygon points="50,14 86,50 50,86 14,50" fill="${solidFill}" stroke="${stroke}" stroke-width="8"></polygon></svg>`
+  }
+  if (shape === 'bar') {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="transform:rotate(${rotation}deg);"><rect x="20" y="38" width="60" height="24" rx="6" fill="${solidFill}" stroke="${stroke}" stroke-width="8"></rect></svg>`
+  }
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true" style="transform:rotate(${rotation}deg);"><polygon points="50,16 84,80 16,80" fill="${solidFill}" stroke="${stroke}" stroke-width="8"></polygon></svg>`
+}
+
+function describeMatrixCell(cell) {
+  return `${cell.count} ${cell.fill === 'solid' ? 'solid' : 'outline'} ${cell.shape}${cell.count > 1 ? 's' : ''}${cell.rotation ? ` rotated ${cell.rotation} degrees` : ''}`
+}
+
+function matrixCellKey(cell) {
+  return `${cell.shape}|${cell.count}|${cell.fill}|${cell.rotation}`
+}
+
+function dedupeMatrixCells(items, keyFn) {
+  const seen = new Set()
+  return items.filter(item => {
+    const key = keyFn(item)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+function buildSymmetryPattern(axis, gridSize, salt = 0) {
+  const points = []
+  const targetCount = randInt(gridSize + 1, gridSize + 3)
+  const seen = new Set()
+
+  while (points.length < targetCount) {
+    const row = randInt(0, gridSize - 1)
+    const col = randInt(0, gridSize - 1)
+    const key = `${row}:${col}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    points.push([row, col])
+  }
+
+  if (patternKey(points) === patternKey(mirrorPatternPoints(points, axis, gridSize))) {
+    const row = (salt + 1) % gridSize
+    const col = axis === 'vertical' ? 0 : ((salt + 2) % gridSize)
+    points.push([row, col])
+  }
+
+  return normalizePattern(points, gridSize)
+}
+
+function mirrorPatternPoints(points, axis, gridSize) {
+  return normalizePattern(points.map(([row, col]) => (
+    axis === 'vertical'
+      ? [row, (gridSize - 1) - col]
+      : [(gridSize - 1) - row, col]
+  )), gridSize)
+}
+
+function normalizePattern(points, gridSize) {
+  const seen = new Set()
+  return points
+    .filter(([row, col]) => row >= 0 && row < gridSize && col >= 0 && col < gridSize)
+    .filter(([row, col]) => {
+      const key = `${row}:${col}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .sort((left, right) => (left[0] - right[0]) || (left[1] - right[1]))
+}
+
+function rotatePatternPoints(points, gridSize) {
+  return normalizePattern(points.map(([row, col]) => [col, (gridSize - 1) - row]), gridSize)
+}
+
+function mutatePatternPoints(points, gridSize) {
+  const mutated = [...points.map(([row, col]) => [row, col])]
+  const index = randInt(0, mutated.length - 1)
+  mutated[index] = [mutated[index][0], Math.max(0, Math.min(gridSize - 1, mutated[index][1] + (mutated[index][1] === 0 ? 1 : -1)))]
+  return normalizePattern(mutated, gridSize)
+}
+
+function patternKey(points) {
+  return points.map(([row, col]) => `${row}:${col}`).join('|')
+}
+
+function buildSymmetryDistractors({ answerPattern, sourcePattern, axis, gridSize }) {
+  return dedupeMatrixCells([
+    sourcePattern,
+    mirrorPatternPoints(answerPattern, axis, gridSize),
+    mirrorPatternPoints(answerPattern, axis === 'vertical' ? 'horizontal' : 'vertical', gridSize),
+    rotatePatternPoints(answerPattern, gridSize),
+    mutatePatternPoints(answerPattern, gridSize),
+  ], patternKey).filter(pattern => patternKey(pattern) !== patternKey(answerPattern)).slice(0, 3)
+}
+
+function renderSymmetryChallenge({ axis, gridSize, missingRow, missingSide, rows, title }) {
+  const axisHtml = axis === 'vertical'
+    ? '<div style="width:4px;height:56px;background:#7c9bc4;border-radius:999px;"></div>'
+    : '<div style="width:56px;height:4px;background:#7c9bc4;border-radius:999px;"></div>'
+
+  return `
+    <div class="chart">
+      <div class="center"><strong>${title}</strong></div>
+      <div style="display:grid;grid-template-columns:minmax(110px, 1fr) 72px minmax(110px, 1fr);gap:14px;align-items:center;max-width:520px;margin:16px auto 0;">
+        ${rows.map((row, index) => `
+          <div class="diagram-cell" style="min-height:92px;">${index === missingRow && missingSide === 'left' ? '<div class="diagram-cell missing" style="min-height:72px;font-size:28px;">?</div>' : renderPatternGrid(row.source, gridSize, 12)}</div>
+          <div class="diagram-cell" style="min-height:92px;background:#f8fafc;border-style:dashed;">${axisHtml}</div>
+          <div class="diagram-cell" style="min-height:92px;">${index === missingRow && missingSide === 'right' ? '<div class="diagram-cell missing" style="min-height:72px;font-size:28px;">?</div>' : renderPatternGrid(row.mirrored, gridSize, 12)}</div>
+        `).join('')}
+      </div>
+      <div class="small center mt8">Mirror each row across the ${axis} axis and use the completed rows as examples.</div>
+    </div>
+  `
+}
+
+function renderPatternGrid(points, gridSize, cellSize = 12) {
+  const active = new Set(points.map(([row, col]) => `${row}:${col}`))
+  return `
+    <div style="display:grid;grid-template-columns:repeat(${gridSize}, ${cellSize}px);gap:4px;justify-content:center;">
+      ${Array.from({ length: gridSize * gridSize }, (_, index) => {
+        const row = Math.floor(index / gridSize)
+        const col = index % gridSize
+        const isActive = active.has(`${row}:${col}`)
+        return `<span style="width:${cellSize}px;height:${cellSize}px;border-radius:3px;border:1px solid ${isActive ? '#0f172a' : '#d7dee8'};background:${isActive ? '#0f172a' : '#ffffff'};display:block;"></span>`
+      }).join('')}
+    </div>
   `
 }
 

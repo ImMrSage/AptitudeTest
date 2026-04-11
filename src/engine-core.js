@@ -20,12 +20,13 @@ export function createInitialState() {
       correct: 0,
       byTopic: {
         numerical: { total: 0, correct: 0 },
-        verbal: { total: 0, correct: 0 },
-        logical: { total: 0, correct: 0 },
-        concentration: { total: 0, correct: 0 },
-        planning: { total: 0, correct: 0 },
         quantitative: { total: 0, correct: 0 },
+        logical: { total: 0, correct: 0 },
         mechanical: { total: 0, correct: 0 },
+        verbal: { total: 0, correct: 0 },
+        planning: { total: 0, correct: 0 },
+        concentration: { total: 0, correct: 0 },
+        german: { total: 0, correct: 0 },
         mixed: { total: 0, correct: 0 }
       }
     }
@@ -34,12 +35,13 @@ export function createInitialState() {
 
     export const TOPICS = [
       { value: 'numerical', label: 'Numerical reasoning' },
-      { value: 'verbal', label: 'Verbal reasoning' },
-      { value: 'logical', label: 'Abstract / diagrammatic reasoning' },
-      { value: 'concentration', label: 'Concentration' },
-      { value: 'planning', label: 'Planning' },
       { value: 'quantitative', label: 'AP Quantitative' },
+      { value: 'logical', label: 'Abstract / diagrammatic reasoning' },
       { value: 'mechanical', label: 'Mechanical reasoning' },
+      { value: 'verbal', label: 'Verbal reasoning' },
+      { value: 'planning', label: 'Planning' },
+      { value: 'concentration', label: 'Concentration' },
+      { value: 'german', label: 'German language' },
       { value: 'mixed', label: 'Assessment Mix' }
     ];
 
@@ -78,6 +80,7 @@ export function createInitialState() {
         logical: { easy: 40, medium: 32, hard: 26 },
         concentration: { easy: 28, medium: 22, hard: 18 },
         planning: { easy: 55, medium: 45, hard: 36 },
+        german: { easy: 40, medium: 32, hard: 24 },
         quantitative: { easy: 75, medium: 60, hard: 48 },
         mechanical: { easy: 45, medium: 35, hard: 28 },
         mixed: { easy: 45, medium: 38, hard: 30 }
@@ -90,12 +93,13 @@ export { buildDetailedExplanationHtml } from './explanations/details'
 export function topicLabel(k) {
       return ({
         numerical: 'Numerical reasoning',
-        verbal: 'Verbal reasoning',
-        logical: 'Abstract / diagrammatic reasoning',
-        concentration: 'Concentration',
-        planning: 'Planning',
         quantitative: 'AP Quantitative',
+        logical: 'Abstract / diagrammatic reasoning',
         mechanical: 'Mechanical reasoning',
+        verbal: 'Verbal reasoning',
+        planning: 'Planning',
+        concentration: 'Concentration',
+        german: 'German language',
         mixed: 'Assessment Mix'
       })[k] || k;
     }
@@ -118,6 +122,7 @@ export function topicLabel(k) {
         verbal: 6,
         concentration: 5,
         logical: 5,
+        german: 6,
         quantitative: 5,
         mechanical: 5
       };
