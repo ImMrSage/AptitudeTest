@@ -173,16 +173,96 @@ const DEFINITION_ITEMS = [
   },
 ]
 
+const VERB_MATCH_ITEMS = [
+  {
+    key: 'generieren',
+    verb: 'Generieren',
+    answer: 'Hervorbringen, erstellen, erzeugen',
+    distractors: ['Bestaetigen, bekraeftigen, beglaubigen', 'Veraendern, umwandeln', 'Erwerben, herbeischaffen'],
+    reasonEn: '"Generieren" means to produce, create or generate something.',
+    reasonDe: '"Generieren" bedeutet etwas hervorbringen, erstellen oder erzeugen.',
+    level: 'easy',
+  },
+  {
+    key: 'etablieren',
+    verb: 'Etablieren',
+    answer: 'Festsetzen, sich niederlassen, einen sicheren Platz gewinnen',
+    distractors: ['Veraendern, umwandeln', 'Verfaelschen, faelschen', 'Erwerben, herbeischaffen'],
+    reasonEn: '"Etablieren" means to establish or secure a position.',
+    reasonDe: '"Etablieren" bedeutet sich festsetzen oder eine gesicherte Position gewinnen.',
+    level: 'medium',
+  },
+  {
+    key: 'akquirieren',
+    verb: 'Akquirieren',
+    answer: 'Erwerben, herbeischaffen',
+    distractors: ['Bearbeiten, formen, gestalten', 'Bestaetigen, bekraeftigen, beglaubigen', 'Hervorbringen, erstellen, erzeugen'],
+    reasonEn: '"Akquirieren" means to acquire or obtain something.',
+    reasonDe: '"Akquirieren" bedeutet etwas erwerben oder herbeischaffen.',
+    level: 'medium',
+  },
+  {
+    key: 'modifizieren',
+    verb: 'Modifizieren',
+    answer: 'Aendern, umwandeln',
+    distractors: ['Verfaelschen, faelschen', 'Hervorbringen, erstellen, erzeugen', 'Festsetzen, sich niederlassen, einen sicheren Platz gewinnen'],
+    reasonEn: '"Modifizieren" means to modify, change or transform.',
+    reasonDe: '"Modifizieren" bedeutet aendern oder umwandeln.',
+    level: 'easy',
+  },
+]
+
+const EMAIL_GAP_ITEMS = [
+  {
+    key: 'qualitaetspruefung',
+    sentence: 'Wir moechten die geplante _____ um eine Woche verschieben.',
+    answer: 'Qualitaetspruefung',
+    distractors: ['Qualitaetspruefungen', 'Qualitaetspruefer', 'Qualitaetsprobe'],
+    reasonEn: 'The letter refers to the planned quality inspection, so the singular noun "Qualitaetspruefung" fits.',
+    reasonDe: 'Der Brief bezieht sich auf die geplante Qualitaetspruefung, daher passt der Singular "Qualitaetspruefung".',
+    level: 'easy',
+  },
+  {
+    key: 'produktionsphase',
+    sentence: 'Wir befinden uns momentan in einer intensiven _____.',
+    answer: 'Produktionsphase',
+    distractors: ['Produktionphase', 'Produktionsphasen', 'Produktivphase'],
+    reasonEn: 'The correct compound noun is "Produktionsphase".',
+    reasonDe: 'Das korrekte zusammengesetzte Substantiv lautet "Produktionsphase".',
+    level: 'easy',
+  },
+  {
+    key: 'aufgrund',
+    sentence: '_____ der momentanen Auftragslage sind wir davon ueberzeugt, dass ein Aufschub erforderlich ist.',
+    answer: 'Aufgrund der momentanen Auftragslage',
+    distractors: ['Aufgrund die momentane Auftragslage', 'Aufgrund der momentanen Auftragslage,', 'Aufgrund die momentanen Auftragslage'],
+    reasonEn: '"Aufgrund" is followed by the genitive phrase "der momentanen Auftragslage".',
+    reasonDe: 'Nach "Aufgrund" steht hier der Genitiv: "der momentanen Auftragslage".',
+    level: 'medium',
+  },
+  {
+    key: 'dass',
+    sentence: 'Wir sind davon ueberzeugt, _____ durch kleine Anpassungen mehr Zeit gewonnen werden kann.',
+    answer: 'dass',
+    distractors: ['das', 'denn', 'weil'],
+    reasonEn: 'The conjunction introducing the subordinate clause is "dass".',
+    reasonDe: 'Die passende Konjunktion fuer den Nebensatz lautet "dass".',
+    level: 'medium',
+  },
+]
+
 export function generateGerman(difficulty) {
   const families = difficulty === 'easy'
-    ? ['spelling', 'spelling', 'sentence', 'definition']
+    ? ['spelling', 'spelling', 'sentence', 'definition', 'verb-match']
     : difficulty === 'medium'
-    ? ['spelling', 'sentence', 'sentence', 'definition', 'definition']
-    : ['spelling', 'sentence', 'sentence', 'definition', 'definition', 'definition']
+    ? ['spelling', 'sentence', 'sentence', 'definition', 'definition', 'verb-match', 'email-gap']
+    : ['spelling', 'sentence', 'sentence', 'definition', 'definition', 'definition', 'verb-match', 'email-gap', 'email-gap']
 
   const family = pick(families)
   if (family === 'spelling') return germanSpelling(difficulty)
   if (family === 'sentence') return germanSentenceCompletion(difficulty)
+  if (family === 'verb-match') return germanVerbMatch(difficulty)
+  if (family === 'email-gap') return germanEmailGap(difficulty)
   return germanDefinition(difficulty)
 }
 
@@ -287,6 +367,78 @@ function germanDefinition(difficulty) {
         }),
         explanation: item.reasonDe,
         pattern: 'Bei Wort-Definition-Aufgaben zuerst die Kernaussage der Definition bestimmen und ähnlich klingende, aber falsche Wörter streichen.',
+      },
+    },
+  }
+}
+
+function germanVerbMatch(difficulty) {
+  const item = pick(filterByDifficulty(VERB_MATCH_ITEMS, difficulty))
+  const options = shuffle([item.answer, ...item.distractors])
+  const correctIndex = options.indexOf(item.answer)
+
+  return {
+    topic: 'german',
+    topicLabel: GERMAN_TOPIC_LABEL,
+    variantKey: `german-verb-match-${item.key}`,
+    familyKey: 'german-verb-match',
+    timer: getTimerSeconds('german', difficulty),
+    prompt: `Which definition matches "${item.verb}"?`,
+    visualHtml: renderGermanCard({
+      title: 'German language',
+      instruction: 'Match the German verb with the correct definition.',
+      displayContent: item.verb,
+    }),
+    options: options.map(option => ({ text: option, plain: option })),
+    correctIndex,
+    explanation: item.reasonEn,
+    pattern: 'For verb-definition matching, reduce the verb to its core meaning before comparing the longer definitions.',
+    translations: {
+      de: {
+        prompt: `Welche Definition passt zu "${item.verb}"?`,
+        visualHtml: renderGermanCard({
+          title: 'Deutschkenntnisse',
+          instruction: 'Ordnen Sie dem Verb die passende Definition zu.',
+          displayContent: item.verb,
+        }),
+        explanation: item.reasonDe,
+        pattern: 'Bei Verb-Definition-Aufgaben zuerst die Kernbedeutung des Verbs bestimmen und dann die Definitionen vergleichen.',
+      },
+    },
+  }
+}
+
+function germanEmailGap(difficulty) {
+  const item = pick(filterByDifficulty(EMAIL_GAP_ITEMS, difficulty))
+  const options = shuffle([item.answer, ...item.distractors])
+  const correctIndex = options.indexOf(item.answer)
+
+  return {
+    topic: 'german',
+    topicLabel: GERMAN_TOPIC_LABEL,
+    variantKey: `german-email-gap-${item.key}`,
+    familyKey: 'german-email-gap',
+    timer: getTimerSeconds('german', difficulty),
+    prompt: 'Which option correctly completes the formal German email?',
+    visualHtml: renderGermanCard({
+      title: 'German language',
+      instruction: 'Choose the correct expression for the blank in the formal email.',
+      displayContent: `<strong>Subject: Request to postpone the quality inspection</strong><br><br>Sehr geehrte Frau Bauer,<br><br>${item.sentence}<br><br>Mit freundlichen Gruessen,<br>Pablo Martinez`,
+    }),
+    options: options.map(option => ({ text: option, plain: option })),
+    correctIndex,
+    explanation: item.reasonEn,
+    pattern: 'For formal German text gaps, check case, compound nouns, conjunctions and punctuation in context.',
+    translations: {
+      de: {
+        prompt: 'Welche Option vervollstaendigt die formelle E-Mail richtig?',
+        visualHtml: renderGermanCard({
+          title: 'Deutschkenntnisse',
+          instruction: 'Waehlen Sie den passenden Ausdruck fuer die Luecke in der formellen E-Mail.',
+          displayContent: `<strong>Betreff: Anfrage Verschiebung der Qualitaetspruefung</strong><br><br>Sehr geehrte Frau Bauer,<br><br>${item.sentence}<br><br>Mit freundlichen Gruessen,<br>Pablo Martinez`,
+        }),
+        explanation: item.reasonDe,
+        pattern: 'Bei Luecken in formellen Texten auf Kasus, zusammengesetzte Substantive, Konjunktionen und Zeichensetzung achten.',
       },
     },
   }

@@ -25,6 +25,9 @@ export function generateMechanical(difficulty) {
     'rope-slip',
     'bulb-circuit',
     'bulb-circuit',
+    'circuit-switch-combo',
+    'circuit-lit-lamps',
+    'bulb-brightness-network',
     'bulb-count',
     'bulb-count',
     'bulb-failure',
@@ -56,7 +59,9 @@ export function generateMechanical(difficulty) {
     'balance-heaviest',
     'chain-load',
     'water-overflow-level',
-    'wheel-direction-pair'
+    'wheel-direction-pair',
+    'hydraulic-lift',
+    'hydraulic-lift'
   ]
   const family = pick(families)
   if (family === 'gear') return mechanicalGear(difficulty)
@@ -74,6 +79,9 @@ export function generateMechanical(difficulty) {
   if (family === 'thermal') return mechanicalThermal(difficulty)
   if (family === 'rope-slip') return mechanicalRopeSlip(difficulty)
   if (family === 'bulb-circuit') return mechanicalBulbCircuit(difficulty)
+  if (family === 'circuit-switch-combo') return mechanicalCircuitSwitchCombo(difficulty)
+  if (family === 'circuit-lit-lamps') return mechanicalCircuitLitLamps(difficulty)
+  if (family === 'bulb-brightness-network') return mechanicalBulbBrightnessNetwork(difficulty)
   if (family === 'bulb-count') return mechanicalBulbCount(difficulty)
   if (family === 'bulb-failure') return mechanicalBulbFailure(difficulty)
   if (family === 'dynamo-brightness') return mechanicalDynamoBrightness(difficulty)
@@ -104,6 +112,7 @@ export function generateMechanical(difficulty) {
   if (family === 'chain-load') return mechanicalChainLoad(difficulty)
   if (family === 'water-overflow-level') return mechanicalWaterOverflowLevel(difficulty)
   if (family === 'wheel-direction-pair') return mechanicalWheelDirectionPair(difficulty)
+  if (family === 'hydraulic-lift') return mechanicalHydraulicLift(difficulty)
   return mechanicalHalligan(difficulty)
 }
 function mechanicalGear(difficulty) {
@@ -1150,6 +1159,179 @@ function mechanicalBulbCircuit(difficulty) {
       </div>
     `,
     pattern: 'A bulb needs a closed circuit with two different bulb contacts: the bottom tip and the metal side.'
+  }
+}
+
+function mechanicalCircuitSwitchCombo(difficulty) {
+  const scenarios = [
+    { key: 'bypass-a-return', answer: 'S1 and S2 open, S3 and S4 closed' },
+    { key: 'all-lamps-path', answer: 'S2 and S3 open, S1 and S4 closed' },
+    { key: 'series-feed', answer: 'S3 and S4 open, S1 and S2 closed' },
+  ]
+  const scenario = pick(scenarios)
+  const options = shuffle([
+    scenario.answer,
+    'S1, S2 and S4 open, S3 closed',
+    'S2 and S3 open, S1 and S4 closed',
+    'S3 and S4 open, S1 and S2 closed',
+  ].filter((value, index, list) => list.indexOf(value) === index))
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-circuit-switch-combo-${scenario.key}`,
+    familyKey: 'mechanical-circuit-switch-combo',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: 'Which switch combination makes all three lamps light?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Electrical switch logic</strong></div>
+        ${switchLampCircuitSvg('combo')}
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: 'All lamps light only when the supply path and the return path are both closed while no lamp is bypassed by a short circuit.',
+    pattern: 'For switch circuits, trace current from plus to minus. A lamp lights only if it lies on a closed path and is not bypassed by a wire.',
+    translations: {
+      de: {
+        prompt: 'Bei welcher Schalterkombination leuchten alle drei Lampen?',
+        explanation: 'Alle Lampen leuchten nur, wenn Hin- und Rueckweg geschlossen sind und keine Lampe durch eine direkte Leitung ueberbrueckt wird.',
+        pattern: 'Bei Schaltungen den Stromweg von Plus nach Minus verfolgen. Eine Lampe leuchtet nur auf einem geschlossenen Weg ohne Kurzschluss-Bypass.',
+      },
+    },
+  }
+}
+
+function mechanicalCircuitLitLamps(difficulty) {
+  const scenarios = [
+    { key: 'left-only', switches: 'S1 closed, S2 and S3 open', answer: 'Lamp L1' },
+    { key: 'right-pair', switches: 'S1 and S2 closed, S3 open', answer: 'Lamps L1 and L3' },
+    { key: 'middle-only', switches: 'S2 and S3 closed, S1 open', answer: 'Lamp L2' },
+  ]
+  const scenario = pick(scenarios)
+  const options = shuffle([scenario.answer, 'Lamp L1', 'Lamp L2', 'Lamps L2 and L3', 'No lamp lights'].filter((value, index, list) => list.indexOf(value) === index))
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-circuit-lit-lamps-${scenario.key}`,
+    familyKey: 'mechanical-circuit-lit-lamps',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: `Which lamps light with this switch setting: ${scenario.switches}?`,
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Lit lamps from switch positions</strong></div>
+        ${switchLampCircuitSvg(scenario.key)}
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: `With ${scenario.switches}, the complete current path includes ${scenario.answer}. Other lamps either have no supply path or no return path.`,
+    pattern: 'A lamp lights only when both of its sides connect into a complete circuit between the battery terminals.',
+    translations: {
+      de: {
+        prompt: `Welche Lampen leuchten bei dieser Schalterstellung: ${scenario.switches}?`,
+        explanation: `Bei ${scenario.switches} fuehrt der geschlossene Stromweg ueber ${scenario.answer}. Die anderen Lampen haben keinen vollstaendigen Hin- und Rueckweg.`,
+        pattern: 'Eine Lampe leuchtet nur, wenn beide Anschluesse in einem geschlossenen Stromkreis zwischen den Batteriepolen liegen.',
+      },
+    },
+  }
+}
+
+function mechanicalBulbBrightnessNetwork(difficulty) {
+  const scenarios = [
+    { key: 'remove-parallel-c', target: 'B', removed: 'C', answer: 'It keeps the same brightness' },
+    { key: 'remove-parallel-c-target-a', target: 'A', removed: 'C', answer: 'It becomes dimmer' },
+    { key: 'remove-b-and-c-target-a', target: 'A', removed: 'B and C', answer: 'It goes out' },
+  ]
+  const scenario = pick(scenarios)
+  const options = ['It becomes dimmer', 'It becomes brighter', 'It goes out', 'It keeps the same brightness']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-bulb-brightness-network-${scenario.key}`,
+    familyKey: 'mechanical-bulb-brightness-network',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: `How does the brightness of bulb ${scenario.target} change when bulb ${scenario.removed} is removed?`,
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Series and parallel bulbs</strong></div>
+        ${brightnessCircuitSvg()}
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.answer === 'It keeps the same brightness'
+      ? 'Bulbs B and C are parallel branches. Removing C does not change the voltage across B, so B keeps the same brightness.'
+      : scenario.answer === 'It becomes dimmer'
+        ? 'Bulb A is in series with the parallel branch. Removing one parallel branch increases the total resistance, so the current through A decreases and A becomes dimmer.'
+        : 'Removing both parallel bulbs opens the only return path after A, so A no longer has a complete circuit.',
+    pattern: 'Series bulbs share current. Parallel bulbs share voltage. Removing a parallel branch may change the series current but not the voltage across the remaining parallel branch.',
+    translations: {
+      de: {
+        prompt: `Wie veraendert sich die Helligkeit der Gluehlampe ${scenario.target}, wenn Gluehlampe ${scenario.removed} herausgeschraubt wird?`,
+        explanation: scenario.answer === 'It keeps the same brightness'
+          ? 'Die Lampen B und C liegen parallel. Wird C entfernt, bleibt die Spannung an B gleich, daher bleibt B gleich hell.'
+          : scenario.answer === 'It becomes dimmer'
+            ? 'Lampe A liegt in Reihe mit dem Parallelzweig. Wird ein Parallelzweig entfernt, steigt der Gesamtwiderstand, der Strom durch A sinkt und A wird dunkler.'
+            : 'Werden beide parallelen Lampen entfernt, ist der Rueckweg nach A unterbrochen. A hat dann keinen geschlossenen Stromkreis mehr.',
+        pattern: 'Reihenlampen teilen den Strom. Parallellampen teilen die Spannung. Ein entfernter Parallelzweig kann den Reihenstrom veraendern.',
+      },
+    },
+  }
+}
+
+function mechanicalHydraulicLift(difficulty) {
+  const scenarios = [
+    { key: 'pressure', prompt: 'How high is the pressure of the hydraulic fluid on piston 1 and piston 2?', answer: 'The same pressure' },
+    { key: 'force', prompt: 'Compared with piston 1, with what force does piston 2 lift?', answer: 'More force' },
+    { key: 'distance', prompt: 'Compared with piston 2, what distance does the car platform travel?', answer: 'Less distance' },
+  ]
+  const scenario = pick(scenarios)
+  const options = scenario.key === 'pressure'
+    ? ['The same pressure', 'Piston 1 has more pressure', 'Piston 2 has more pressure']
+    : scenario.key === 'force'
+      ? ['Same force', 'More force', 'Less force']
+      : ['Same distance', 'More distance', 'Less distance']
+
+  return {
+    topic: 'mechanical',
+    topicLabel: 'Mechanical reasoning',
+    variantKey: `mechanical-hydraulic-lift-${scenario.key}`,
+    familyKey: 'mechanical-hydraulic-lift',
+    timer: getTimerSeconds('mechanical', difficulty),
+    prompt: scenario.prompt,
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Hydraulic lift</strong></div>
+        ${hydraulicLiftSvg()}
+      </div>
+    `,
+    options: options.map(value => ({ text: value, plain: value })),
+    correctIndex: options.indexOf(scenario.answer),
+    explanation: scenario.key === 'pressure'
+      ? 'In a connected hydraulic fluid, pressure is transmitted equally through the fluid.'
+      : scenario.key === 'force'
+        ? 'The larger piston has a larger area. Equal pressure over a larger area creates more force.'
+        : 'The large piston moves a shorter distance because the same fluid volume is spread over a larger piston area.',
+    pattern: 'Hydraulics follow Pascal principle: pressure is transmitted equally, while force and distance depend on piston area.',
+    translations: {
+      de: {
+        prompt: scenario.key === 'pressure'
+          ? 'Wie hoch ist der Druck der Hydraulikfluessigkeit auf Kolben 1 und Kolben 2?'
+          : scenario.key === 'force'
+            ? 'Mit welcher Kraft fuehrt Kolben 2 den Hub im Vergleich zu Kolben 1 aus?'
+            : 'Welche Strecke legt die Plattform im Vergleich zu Kolben 2 zurueck?',
+        explanation: scenario.key === 'pressure'
+          ? 'In einer verbundenen Hydraulikfluessigkeit wird der Druck gleichmaessig uebertragen.'
+          : scenario.key === 'force'
+            ? 'Der groessere Kolben hat eine groessere Flaeche. Gleicher Druck auf groesserer Flaeche erzeugt mehr Kraft.'
+            : 'Der grosse Kolben bewegt sich kuerzer, weil dasselbe Fluessigkeitsvolumen auf eine groessere Kolbenflaeche verteilt wird.',
+        pattern: 'Hydraulik folgt dem Pascalschen Prinzip: Der Druck wird gleich uebertragen, Kraft und Weg haengen von der Kolbenflaeche ab.',
+      },
+    },
   }
 }
 
@@ -2713,6 +2895,102 @@ function mechanicalWheelDirectionPair(difficulty) {
     explanation: 'Wheel A drives 5 with an open belt, so 5 turns the same way. Wheel 5 drives 4 with another open belt, so 4 also turns the same way. The later links reverse the direction for the other wheels.',
     pattern: 'Track direction stage by stage. Open belts keep direction, while reversing links flip it.',
   }
+}
+
+function switchLampCircuitSvg(mode) {
+  const open = {
+    S1: mode === 'left-only' ? false : true,
+    S2: mode === 'right-pair' || mode === 'middle-only' ? false : true,
+    S3: mode === 'middle-only' ? false : true,
+  }
+  return `
+    <svg viewBox="0 0 520 250" width="100%" height="250" style="display:block;margin-top:10px;" role="img" aria-label="Lamp circuit with switches">
+      <line x1="70" y1="62" x2="70" y2="190" stroke="#111827" stroke-width="4"></line>
+      <line x1="70" y1="190" x2="430" y2="190" stroke="#111827" stroke-width="4"></line>
+      <line x1="70" y1="62" x2="116" y2="62" stroke="#111827" stroke-width="4"></line>
+      ${switchSymbolSvg(116, 62, 'S1', open.S1)}
+      <line x1="166" y1="62" x2="230" y2="62" stroke="#111827" stroke-width="4"></line>
+      ${switchSymbolSvg(230, 62, 'S2', open.S2)}
+      <line x1="280" y1="62" x2="330" y2="62" stroke="#111827" stroke-width="4"></line>
+      ${switchSymbolSvg(330, 62, 'S3', open.S3)}
+      <line x1="380" y1="62" x2="430" y2="62" stroke="#111827" stroke-width="4"></line>
+      <line x1="430" y1="62" x2="430" y2="190" stroke="#111827" stroke-width="4"></line>
+      ${circuitLampSvg(158, 148, 'L1')}
+      ${circuitLampSvg(304, 148, 'L2')}
+      ${circuitLampSvg(430, 148, 'L3')}
+      <line x1="158" y1="62" x2="158" y2="124" stroke="#111827" stroke-width="4"></line>
+      <line x1="158" y1="172" x2="158" y2="190" stroke="#111827" stroke-width="4"></line>
+      <line x1="304" y1="62" x2="304" y2="124" stroke="#111827" stroke-width="4"></line>
+      <line x1="304" y1="172" x2="304" y2="190" stroke="#111827" stroke-width="4"></line>
+      <text x="52" y="92" font-size="18">+</text>
+      <text x="54" y="178" font-size="20">-</text>
+    </svg>
+  `
+}
+
+function switchSymbolSvg(x, y, label, isOpen) {
+  const endX = x + 50
+  const bladeEndY = isOpen ? y - 18 : y
+  return `
+    <circle cx="${x}" cy="${y}" r="4" fill="#111827"></circle>
+    <circle cx="${endX}" cy="${y}" r="4" fill="#111827"></circle>
+    <line x1="${x}" y1="${y}" x2="${endX - 8}" y2="${bladeEndY}" stroke="#111827" stroke-width="4"></line>
+    <text x="${x + 12}" y="${y + 28}" font-size="16">${label}</text>
+  `
+}
+
+function circuitLampSvg(cx, cy, label) {
+  return `
+    <g>
+      <circle cx="${cx}" cy="${cy}" r="24" fill="#ffffff" stroke="#111827" stroke-width="4"></circle>
+      <line x1="${cx - 15}" y1="${cy - 15}" x2="${cx + 15}" y2="${cy + 15}" stroke="#111827" stroke-width="3"></line>
+      <line x1="${cx + 15}" y1="${cy - 15}" x2="${cx - 15}" y2="${cy + 15}" stroke="#111827" stroke-width="3"></line>
+      <text x="${cx + 30}" y="${cy + 6}" font-size="18">${label}</text>
+    </g>
+  `
+}
+
+function brightnessCircuitSvg() {
+  return `
+    <svg viewBox="0 0 460 250" width="100%" height="250" style="display:block;margin-top:10px;" role="img" aria-label="Series and parallel bulb circuit">
+      <line x1="92" y1="58" x2="198" y2="58" stroke="#111827" stroke-width="4"></line>
+      <line x1="246" y1="58" x2="360" y2="58" stroke="#111827" stroke-width="4"></line>
+      <line x1="92" y1="58" x2="92" y2="188" stroke="#111827" stroke-width="4"></line>
+      <line x1="92" y1="188" x2="360" y2="188" stroke="#111827" stroke-width="4"></line>
+      <line x1="360" y1="58" x2="360" y2="188" stroke="#111827" stroke-width="4"></line>
+      <line x1="300" y1="58" x2="300" y2="188" stroke="#111827" stroke-width="4"></line>
+      ${circuitLampSvg(222, 58, 'A')}
+      ${circuitLampSvg(300, 124, 'B')}
+      ${circuitLampSvg(360, 124, 'C')}
+      <text x="64" y="96" font-size="18">+</text>
+      <text x="66" y="178" font-size="20">-</text>
+    </svg>
+  `
+}
+
+function hydraulicLiftSvg() {
+  return `
+    <svg viewBox="0 0 540 270" width="100%" height="270" style="display:block;margin-top:10px;" role="img" aria-label="Hydraulic lift">
+      <rect x="90" y="160" width="120" height="34" fill="#fbbf24" stroke="#111827" stroke-width="3"></rect>
+      <rect x="90" y="150" width="120" height="54" fill="none" stroke="#111827" stroke-width="4"></rect>
+      <rect x="248" y="126" width="190" height="78" fill="#fbbf24" stroke="#111827" stroke-width="3"></rect>
+      <rect x="248" y="96" width="190" height="118" fill="none" stroke="#111827" stroke-width="4"></rect>
+      <rect x="318" y="62" width="48" height="34" fill="#e5e7eb" stroke="#111827" stroke-width="3"></rect>
+      <rect x="270" y="32" width="144" height="28" fill="#e5e7eb" stroke="#111827" stroke-width="3"></rect>
+      <path d="M264 22 C305 0 382 0 424 22" fill="none" stroke="#111827" stroke-width="3"></path>
+      <line x1="210" y1="177" x2="248" y2="177" stroke="#111827" stroke-width="4"></line>
+      <line x1="70" y1="152" x2="90" y2="168" stroke="#111827" stroke-width="4"></line>
+      <line x1="62" y1="122" x2="70" y2="152" stroke="#111827" stroke-width="4"></line>
+      <path d="M52 122 L92 122" stroke="#7c3aed" stroke-width="3"></path>
+      <polygon points="92,122 80,115 80,129" fill="#7c3aed"></polygon>
+      <path d="M342 112 L342 70" stroke="#7c3aed" stroke-width="3"></path>
+      <polygon points="342,70 335,84 349,84" fill="#7c3aed"></polygon>
+      <text x="102" y="222" font-size="15">Piston 1</text>
+      <text x="386" y="222" font-size="15">Piston 2</text>
+      <text x="116" y="146" font-size="15">d1</text>
+      <text x="338" y="238" font-size="15">d2</text>
+    </svg>
+  `
 }
 function oppositeDirection(direction) {
   return direction === 'Clockwise' ? 'Counterclockwise' : 'Clockwise'

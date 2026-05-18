@@ -220,10 +220,10 @@ export function diagShading(difficulty) {
 
 export function generateLogical(difficulty) {
   const types = difficulty === 'easy'
-    ? ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix']
+    ? ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'cube-net', 'mirror-odd']
     : difficulty === 'medium'
-    ? ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'code-switch']
-    : ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'matrix', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'number-series']
+    ? ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'code-switch', 'cube-net', 'mirror-odd']
+    : ['gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'gap-challenge', 'matrix', 'code-switch', 'code-switch', 'symmetry', 'number-series', 'surface-count', 'matrix', 'number-series', 'cube-net', 'mirror-odd']
   const type = pick(types)
   const question = type === 'symmetry'
     ? logicalSymmetry(difficulty)
@@ -235,6 +235,10 @@ export function generateLogical(difficulty) {
     ? logicalSurfaceCount(difficulty)
     : type === 'gap-challenge'
     ? logicalGapChallenge(difficulty)
+    : type === 'cube-net'
+    ? logicalCubeNet(difficulty)
+    : type === 'mirror-odd'
+    ? logicalMirrorOdd(difficulty)
     : logicalCodeSwitch(difficulty)
 
   return {
@@ -762,6 +766,194 @@ function logicalGapChallenge(difficulty) {
       },
     },
   }
+}
+
+function logicalCubeNet(difficulty) {
+  const scenarios = [
+    {
+      key: 'circle-x-arrow',
+      top: 'arrow-down',
+      front: 'circle',
+      right: 'x',
+      distractors: ['arrow-left', 'arrow-up', 'arrow-right'],
+    },
+    {
+      key: 'dot-stripe-triangle',
+      top: 'stripe',
+      front: 'dot',
+      right: 'triangle',
+      distractors: ['arrow-down', 'x', 'arrow-left'],
+    },
+    {
+      key: 'square-arrow-ring',
+      top: 'arrow-right',
+      front: 'square',
+      right: 'ring',
+      distractors: ['arrow-left', 'arrow-up', 'x'],
+    },
+  ]
+  const scenario = pick(scenarios)
+  const correct = { top: scenario.top, front: scenario.front, right: scenario.right }
+  const options = shuffle([
+    correct,
+    { top: scenario.distractors[0], front: scenario.front, right: scenario.right },
+    { top: scenario.top, front: scenario.right, right: scenario.front },
+    { top: scenario.distractors[1], front: scenario.front, right: scenario.distractors[2] },
+  ])
+  const correctIndex = options.findIndex(option => option.top === correct.top && option.front === correct.front && option.right === correct.right)
+
+  return {
+    topic: 'logical',
+    topicLabel: LOGICAL_TOPIC_LABEL,
+    familyKey: 'logical-cube-net',
+    variantKey: `cube-net-${scenario.key}`,
+    timer: getTimerSeconds('logical', difficulty),
+    prompt: 'Which cube can be made by folding the shown net?',
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Cube net folding</strong></div>
+        ${renderCubeNet(scenario)}
+      </div>
+    `,
+    options: options.map(option => ({ html: renderCubeOption(option), text: describeCubeOption(option), plain: describeCubeOption(option) })),
+    correctIndex,
+    explanation: 'Fold the cross-shaped net around the center square. Only one option keeps the front, right and top faces in the same relative positions.',
+    pattern: 'For cube nets, track which face becomes the front, which becomes the side, and which becomes the top; adjacent faces must remain adjacent after folding.',
+    translations: {
+      de: {
+        prompt: 'Welcher Wuerfel kann durch Falten der gezeigten Form entstehen?',
+        explanation: 'Falte die kreuzfoermige Abwicklung gedanklich um das mittlere Feld. Nur eine Option behaelt Vorderseite, rechte Seite und Oberseite in der richtigen Lage.',
+        pattern: 'Bei Wuerfelnetzen verfolgen, welche Flaeche vorne, rechts und oben liegt. Benachbarte Flaechen muessen auch nach dem Falten benachbart bleiben.',
+      },
+    },
+  }
+}
+
+function logicalMirrorOdd(difficulty) {
+  const mirroredIndex = randInt(0, 5)
+  const rotationSteps = [0, 1, 2, 3, 1, 2]
+  const options = rotationSteps.map((rotation, index) => ({
+    mirrored: index === mirroredIndex,
+    rotation: (rotation + index) % 4,
+    label: String(index + 1),
+  }))
+
+  return {
+    topic: 'logical',
+    topicLabel: LOGICAL_TOPIC_LABEL,
+    familyKey: 'logical-mirror-odd',
+    variantKey: `mirror-odd-${mirroredIndex}`,
+    timer: getTimerSeconds('logical', difficulty),
+    prompt: 'Which figure is the mirror image and cannot be made to match the others by rotation?',
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Find the mirror image</strong></div>
+        <div class="small center mt8">One of the six figures is mirrored; the others are rotations of the same figure.</div>
+        ${renderMirrorOddGrid(options)}
+      </div>
+    `,
+    options: options.map(option => ({ text: option.label, plain: option.label })),
+    correctIndex: mirroredIndex,
+    explanation: `Figure ${mirroredIndex + 1} has the teeth on the opposite side after accounting for rotation, so it is the mirror image.`,
+    pattern: 'Rotate the figures mentally first. A true mirror image has left-right features swapped, not just turned.',
+    translations: {
+      de: {
+        prompt: 'Welche Figur ist das Spiegelbild und laesst sich durch Drehen nicht mit den anderen zur Deckung bringen?',
+        visualHtml: `
+          <div class="chart center">
+            <div class="center"><strong>Finde das Spiegelbild</strong></div>
+            <div class="small center mt8">Eine der sechs Figuren ist gespiegelt; die anderen sind Drehungen derselben Figur.</div>
+            ${renderMirrorOddGrid(options)}
+          </div>
+        `,
+        explanation: `Figur ${mirroredIndex + 1} hat die Zaehne nach Beruecksichtigung der Drehung auf der entgegengesetzten Seite und ist daher das Spiegelbild.`,
+        pattern: 'Die Figuren zuerst gedanklich drehen. Ein echtes Spiegelbild vertauscht Links und Rechts, es ist nicht nur gedreht.',
+      },
+    },
+  }
+}
+
+function renderCubeNet(scenario) {
+  const cells = [
+    { x: 150, y: 18, symbol: scenario.top },
+    { x: 82, y: 86, symbol: scenario.front },
+    { x: 150, y: 86, symbol: 'arrow-down' },
+    { x: 218, y: 86, symbol: scenario.right },
+    { x: 286, y: 86, symbol: scenario.distractors[0] },
+    { x: 150, y: 154, symbol: 'x' },
+  ]
+  return `
+    <svg viewBox="0 0 430 240" width="100%" height="240" role="img" aria-label="Cube net">
+      ${cells.map(cell => `
+        <rect x="${cell.x}" y="${cell.y}" width="66" height="66" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"></rect>
+        ${renderNetSymbol(cell.symbol, cell.x + 33, cell.y + 33, 1)}
+      `).join('')}
+    </svg>
+  `
+}
+
+function renderCubeOption(option) {
+  return `
+    <svg viewBox="0 0 150 120" width="150" height="120" role="img" aria-label="${describeCubeOption(option)}">
+      <polygon points="38,32 82,12 124,34 80,56" fill="#f8fafc" stroke="#475569" stroke-width="2"></polygon>
+      <polygon points="38,32 80,56 80,104 38,80" fill="#eef2ff" stroke="#475569" stroke-width="2"></polygon>
+      <polygon points="80,56 124,34 124,82 80,104" fill="#e2e8f0" stroke="#475569" stroke-width="2"></polygon>
+      ${renderNetSymbol(option.top, 80, 34, 0.58)}
+      ${renderNetSymbol(option.front, 58, 70, 0.58)}
+      ${renderNetSymbol(option.right, 102, 70, 0.58)}
+    </svg>
+  `
+}
+
+function describeCubeOption(option) {
+  return `top ${option.top}, front ${option.front}, right ${option.right}`
+}
+
+function renderNetSymbol(symbol, cx, cy, scale = 1) {
+  const stroke = '#d97706'
+  const size = 22 * scale
+  if (symbol === 'circle') return `<circle cx="${cx}" cy="${cy}" r="${size}" fill="${stroke}"></circle>`
+  if (symbol === 'dot') return `<circle cx="${cx}" cy="${cy}" r="${size * 0.55}" fill="${stroke}"></circle>`
+  if (symbol === 'square') return `<rect x="${cx - size}" y="${cy - size}" width="${size * 2}" height="${size * 2}" fill="${stroke}"></rect>`
+  if (symbol === 'ring') return `<circle cx="${cx}" cy="${cy}" r="${size}" fill="none" stroke="${stroke}" stroke-width="${5 * scale}"></circle>`
+  if (symbol === 'triangle') return `<polygon points="${cx},${cy - size} ${cx + size},${cy + size} ${cx - size},${cy + size}" fill="${stroke}"></polygon>`
+  if (symbol === 'stripe') return `<line x1="${cx - size}" y1="${cy}" x2="${cx + size}" y2="${cy}" stroke="${stroke}" stroke-width="${7 * scale}"></line>`
+  if (symbol === 'x') {
+    return `<line x1="${cx - size}" y1="${cy - size}" x2="${cx + size}" y2="${cy + size}" stroke="${stroke}" stroke-width="${6 * scale}"></line><line x1="${cx + size}" y1="${cy - size}" x2="${cx - size}" y2="${cy + size}" stroke="${stroke}" stroke-width="${6 * scale}"></line>`
+  }
+  const rotations = { 'arrow-down': 90, 'arrow-up': -90, 'arrow-left': 180, 'arrow-right': 0 }
+  const rotate = rotations[symbol] || 0
+  return `
+    <g transform="translate(${cx} ${cy}) rotate(${rotate}) scale(${scale})">
+      <line x1="-22" y1="0" x2="18" y2="0" stroke="${stroke}" stroke-width="6"></line>
+      <polygon points="18,-12 38,0 18,12" fill="${stroke}"></polygon>
+    </g>
+  `
+}
+
+function renderMirrorOddGrid(options) {
+  return `
+    <div style="display:grid;grid-template-columns:repeat(3, minmax(90px, 150px));gap:12px;justify-content:center;margin-top:16px;">
+      ${options.map(option => `
+        <div class="diagram-cell" style="min-height:120px;">
+          ${renderKeyShape(option)}
+          <div class="small center">${option.label}</div>
+        </div>
+      `).join('')}
+    </div>
+  `
+}
+
+function renderKeyShape({ mirrored, rotation }) {
+  const scaleX = mirrored ? -1 : 1
+  return `
+    <svg viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="abstract key shape">
+      <g transform="translate(60 45) rotate(${rotation * 90}) scale(${scaleX} 1) translate(-60 -45)">
+        <path d="M20 42 C20 26 38 22 48 34 L68 34 L78 24 L92 24 C104 24 108 40 98 48 L86 58 L66 58 L56 48 L46 60 C34 72 18 60 20 42 Z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="4" stroke-linejoin="round"></path>
+        <path d="M52 38 L58 48 L64 38 L70 48 L76 38 L82 48" fill="none" stroke="#1d4ed8" stroke-width="4" stroke-linejoin="round"></path>
+      </g>
+    </svg>
+  `
 }
 
 function prismSvg(frontPoints, dx, dy) {

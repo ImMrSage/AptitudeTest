@@ -14,6 +14,8 @@ export function generateQuantitative(difficulty) {
         'cube-volume',
         'inclusion-exclusion',
         'expand-expression',
+        'basic-arithmetic',
+        'formula-rearrange',
       ]
     : difficulty === 'medium'
     ? [
@@ -30,6 +32,10 @@ export function generateQuantitative(difficulty) {
         'investment-income',
         'inclusion-exclusion',
         'multi-year-growth',
+        'angle-geometry',
+        'age-equation',
+        'formula-rearrange',
+        'area-formula-match',
       ]
     : [
         'percent-word',
@@ -45,6 +51,12 @@ export function generateQuantitative(difficulty) {
         'inclusion-exclusion',
         'multi-year-growth',
         'symbolic-total',
+        'angle-geometry',
+        'shaded-area',
+        'cone-trips',
+        'age-equation',
+        'formula-rearrange',
+        'area-formula-match',
       ]
 
   const family = pick(families)
@@ -61,6 +73,13 @@ export function generateQuantitative(difficulty) {
   if (family === 'relative-percent-gap') return quantitativeRelativePercentGap(difficulty)
   if (family === 'investment-income') return quantitativeInvestmentIncome(difficulty)
   if (family === 'inclusion-exclusion') return quantitativeInclusionExclusion(difficulty)
+  if (family === 'basic-arithmetic') return quantitativeBasicArithmetic(difficulty)
+  if (family === 'angle-geometry') return quantitativeAngleGeometry(difficulty)
+  if (family === 'shaded-area') return quantitativeShadedArea(difficulty)
+  if (family === 'cone-trips') return quantitativeConeTrips(difficulty)
+  if (family === 'age-equation') return quantitativeAgeEquation(difficulty)
+  if (family === 'formula-rearrange') return quantitativeFormulaRearrange(difficulty)
+  if (family === 'area-formula-match') return quantitativeAreaFormulaMatch(difficulty)
   return quantitativeMultiYearGrowth(difficulty)
 }
 
@@ -840,6 +859,249 @@ function quantitativeInclusionExclusion(difficulty) {
   })
 }
 
+function quantitativeBasicArithmetic(difficulty) {
+  const scenarios = [
+    { expression: '(5 + 3) x 4', value: 32 },
+    { expression: '(9 - 2) x 6', value: 42 },
+    { expression: '7 x (12 - 5)', value: 49 },
+    { expression: '(18 + 6) / 3', value: 8 },
+  ]
+  const scenario = pick(scenarios)
+  const options = buildOptions(scenario.value, [
+    scenario.value - 8,
+    scenario.value + 12,
+    Math.round(scenario.value / 2),
+    scenario.value + 28,
+  ])
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-basic-arithmetic',
+    variantKey: `quantitative-basic-arithmetic-${scenario.expression}`,
+    prompt: 'What is the result of this calculation?',
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Arithmetic</strong></div>
+        <div class="question-text" style="font-size:34px;margin-top:18px;">${scenario.expression}</div>
+      </div>
+    `,
+    answer: scenario.value,
+    options,
+    explanation: `Apply brackets first, then multiplication or division. The result is ${scenario.value}.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">First calculate the expression inside the brackets.</div>
+        <div class="formula-line">Then apply the remaining operation.</div>
+        <div class="formula-line">Result = ${scenario.value}</div>
+      </div>
+    `,
+    pattern: 'Use the order of operations: brackets first, then multiplication or division, then addition or subtraction.'
+  })
+}
+
+function quantitativeFormulaRearrange(difficulty) {
+  const scenarios = [
+    { key: 'force-mass', formula: 'F = m x a', ask: 'Which formula is obtained after dividing by m?', answer: 'F / m = a', wrongs: ['F = m / a', 'F = a x m', 'F / a = m'] },
+    { key: 'speed-time', formula: 's = v x t', ask: 'Which formula is obtained after dividing by t?', answer: 's / t = v', wrongs: ['s / v = t', 's = v / t', 'v / s = t'] },
+    { key: 'density-volume', formula: 'm = rho x V', ask: 'Which formula is obtained after dividing by V?', answer: 'm / V = rho', wrongs: ['m / rho = V', 'rho / m = V', 'm = rho / V'] },
+  ]
+  const scenario = pick(scenarios)
+  const options = buildOptions(scenario.answer, scenario.wrongs)
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-formula-rearrange',
+    variantKey: `quantitative-formula-rearrange-${scenario.key}`,
+    prompt: scenario.ask,
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Formula transformation</strong></div>
+        <div class="question-text" style="font-size:34px;margin-top:18px;">${scenario.formula}</div>
+      </div>
+    `,
+    answer: scenario.answer,
+    options,
+    explanation: 'Divide both sides of the equation by the same quantity and cancel it on the side where it is multiplied.',
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Start with ${scenario.formula}</div>
+        <div class="formula-line">Divide both sides by the requested variable.</div>
+        <div class="formula-line">Correct result: ${scenario.answer}</div>
+      </div>
+    `,
+    pattern: 'When rearranging formulas, perform the same operation on both sides of the equation.'
+  })
+}
+
+function quantitativeAgeEquation(difficulty) {
+  const scenarios = [
+    { name: 'Kurt', siblingGap: 3, fatherMultiplier: 3, motherGap: 1, total: 98 },
+    { name: 'Mila', siblingGap: 2, fatherMultiplier: 4, motherGap: 2, total: 85 },
+    { name: 'Noah', siblingGap: 5, fatherMultiplier: 3, motherGap: 4, total: 91 },
+  ]
+  const scenario = pick(scenarios)
+  const age = (scenario.total - scenario.siblingGap + scenario.motherGap) / (scenario.fatherMultiplier + scenario.fatherMultiplier + 2)
+  const answer = String(age)
+  const options = buildOptions(answer, [age - 3, age + 3, age + 5, age - 1].filter(value => value > 0))
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-age-equation',
+    variantKey: `quantitative-age-equation-${scenario.name}-${scenario.total}`,
+    prompt: `How old is ${scenario.name}?`,
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Age equation</strong></div>
+        <div class="statement mt12">${scenario.name} has a sibling who is ${scenario.siblingGap} years older. ${scenario.name}'s father is ${scenario.fatherMultiplier} times as old as ${scenario.name}. The mother is ${scenario.motherGap} year${scenario.motherGap === 1 ? '' : 's'} younger than the father. Together they are ${scenario.total} years old.</div>
+      </div>
+    `,
+    answer,
+    options,
+    explanation: `Let ${scenario.name}'s age be x. Then solve x + (x + ${scenario.siblingGap}) + ${scenario.fatherMultiplier}x + (${scenario.fatherMultiplier}x - ${scenario.motherGap}) = ${scenario.total}.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Let ${scenario.name}'s age be x.</div>
+        <div class="formula-line">x + (x + ${scenario.siblingGap}) + ${scenario.fatherMultiplier}x + (${scenario.fatherMultiplier}x - ${scenario.motherGap}) = ${scenario.total}</div>
+        <div class="formula-line">x = ${answer}</div>
+      </div>
+    `,
+    pattern: 'Translate each person into an expression in x, then solve the total-age equation.'
+  })
+}
+
+function quantitativeConeTrips(difficulty) {
+  const scenarios = [
+    { height: 3, diameter: 10, density: 2.2, load: 18 },
+    { height: 4, diameter: 8, density: 1.9, load: 16 },
+    { height: 2.5, diameter: 12, density: 2.0, load: 20 },
+  ]
+  const scenario = pick(scenarios)
+  const radius = scenario.diameter / 2
+  const volume = Math.PI * radius * radius * scenario.height / 3
+  const weight = volume * scenario.density
+  const trips = Math.ceil(weight / scenario.load)
+  const options = buildOptions(trips, [trips - 2, trips - 1, trips + 1, trips + 2].filter(value => value > 0))
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-cone-trips',
+    variantKey: `quantitative-cone-trips-${scenario.height}-${scenario.diameter}-${scenario.density}-${scenario.load}`,
+    prompt: 'How many trips must the truck make?',
+    visualHtml: `
+      <div class="chart">
+        <div class="center"><strong>Cone volume and load</strong></div>
+        <div class="statement mt12">A cone-shaped pile has a height of ${scenario.height} m and a diameter of ${scenario.diameter} m. One cubic meter weighs ${scenario.density} tonnes. A truck may carry ${scenario.load} tonnes.</div>
+      </div>
+    `,
+    answer: trips,
+    options,
+    explanation: `Compute cone volume, convert it to tonnes, divide by the truck load, and round up because a partial final load still needs a trip.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Radius = ${radius} m</div>
+        <div class="formula-line">Volume = pi x r^2 x h / 3 = ${formatDecimal(volume, 2)} m^3</div>
+        <div class="formula-line">Weight = ${formatDecimal(volume, 2)} x ${scenario.density} = ${formatDecimal(weight, 2)} tonnes</div>
+        <div class="formula-line">Trips = ceil(${formatDecimal(weight, 2)} / ${scenario.load}) = ${trips}</div>
+      </div>
+    `,
+    pattern: 'For transport-capacity problems, calculate the total quantity first and round the number of trips upward.'
+  })
+}
+
+function quantitativeAngleGeometry(difficulty) {
+  const scenarios = [
+    { a: 64, b: 38, outside: 116 },
+    { a: 58, b: 47, outside: 124 },
+    { a: 72, b: 34, outside: 108 },
+  ]
+  const scenario = pick(scenarios)
+  const topAngle = 180 - scenario.a - scenario.b
+  const lineInterior = 180 - scenario.outside
+  const epsilon = 180 - topAngle - lineInterior
+  const options = buildOptions(`${epsilon}°`, [scenario.outside, topAngle, epsilon + 20, epsilon - 20].filter(value => value > 0).map(value => `${value}°`))
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-angle-geometry',
+    variantKey: `quantitative-angle-geometry-${scenario.a}-${scenario.b}-${scenario.outside}`,
+    prompt: 'What is the size of angle epsilon?',
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Angle geometry</strong></div>
+        ${angleGeometrySvg(scenario.a, scenario.b, scenario.outside)}
+      </div>
+    `,
+    answer: `${epsilon}°`,
+    options,
+    explanation: `The triangle top angle is 180 - ${scenario.a} - ${scenario.b} = ${topAngle}. The interior angle next to ${scenario.outside} degrees is ${lineInterior}. Then epsilon is 180 - ${topAngle} - ${lineInterior} = ${epsilon}.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Top triangle angle = 180 - ${scenario.a} - ${scenario.b} = ${topAngle}</div>
+        <div class="formula-line">Interior angle at the crossing = 180 - ${scenario.outside} = ${lineInterior}</div>
+        <div class="formula-line">epsilon = 180 - ${topAngle} - ${lineInterior} = ${epsilon} degrees</div>
+      </div>
+    `,
+    pattern: 'Use triangle angle sums and supplementary angles at straight lines.'
+  })
+}
+
+function quantitativeShadedArea(difficulty) {
+  const side = pick([8, 10, 12, 14])
+  const percent = Number(((1 - Math.PI / 4) * 100).toFixed(2))
+  const options = buildOptions(`${percent}%`, ['18.44%', '21.46%', '31.4%', '25%'])
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-shaded-area',
+    variantKey: `quantitative-shaded-area-square-arcs-${side}`,
+    prompt: 'What percentage of the square is shaded?',
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Shaded area</strong></div>
+        ${shadedSquareSvg(side)}
+      </div>
+    `,
+    answer: `${percent}%`,
+    options,
+    explanation: `The shaded region is the square minus four quarter-circles of radius ${side / 2}. The share is 1 - pi/4, about ${percent}%.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Square area = a^2</div>
+        <div class="formula-line">Four quarter-circles combine to one full circle with radius a/2.</div>
+        <div class="formula-line">Shaded share = (a^2 - pi(a/2)^2) / a^2 = 1 - pi/4 = ${percent}%</div>
+      </div>
+    `,
+    pattern: 'For curved shaded areas, split the picture into a square and circle sectors.'
+  })
+}
+
+function quantitativeAreaFormulaMatch(difficulty) {
+  const items = [
+    { shape: 'circle', formula: 'A = pi r^2', distractors: ['A = pi r^2 / 2', 'A = (a + c) h / 2', 'A = 3 sqrt(3) a^2 / 2'] },
+    { shape: 'semicircle', formula: 'A = pi r^2 / 2', distractors: ['A = pi r^2', 'A = 5ra / 2', 'A = (a + c) h / 2'] },
+    { shape: 'trapezoid', formula: 'A = (a + c) h / 2', distractors: ['A = pi r^2', 'A = 5ra / 2', 'A = 3 sqrt(3) a^2 / 2'] },
+    { shape: 'regular hexagon', formula: 'A = 3 sqrt(3) a^2 / 2', distractors: ['A = pi r^2 / 2', 'A = (a + c) h / 2', 'A = 5ra / 2'] },
+  ]
+  const item = pick(items)
+  const options = buildOptions(item.formula, item.distractors)
+
+  return buildQuantQuestion(difficulty, {
+    familyKey: 'quantitative-area-formula-match',
+    variantKey: `quantitative-area-formula-match-${item.shape}`,
+    prompt: `Which formula calculates the area of the ${item.shape}?`,
+    visualHtml: `
+      <div class="chart center">
+        <div class="center"><strong>Area formulas</strong></div>
+        ${areaFormulaShapeSvg(item.shape)}
+      </div>
+    `,
+    answer: item.formula,
+    options,
+    explanation: `The correct area formula for a ${item.shape} is ${item.formula}.`,
+    explanationHtml: `
+      <div class="formula-block">
+        <div class="formula-line">Identify the shape first.</div>
+        <div class="formula-line">Then choose the matching standard area formula: ${item.formula}</div>
+      </div>
+    `,
+    pattern: 'Match the formula to the shape before substituting numbers.'
+  })
+}
+
 function buildQuantQuestion(difficulty, { familyKey, variantKey, prompt, visualHtml, answer, options, explanation, explanationHtml, pattern }) {
   return {
     topic: 'quantitative',
@@ -855,6 +1117,48 @@ function buildQuantQuestion(difficulty, { familyKey, variantKey, prompt, visualH
     explanationHtml,
     pattern,
   }
+}
+
+function angleGeometrySvg(a, b, outside) {
+  return `
+    <svg width="360" height="210" viewBox="0 0 360 210" role="img" aria-label="Triangle and crossing line with angles">
+      <polygon points="54,162 246,162 128,42" fill="#f8fafc" stroke="#6d5f95" stroke-width="3"></polygon>
+      <line x1="190" y1="190" x2="274" y2="28" stroke="#6d5f95" stroke-width="3"></line>
+      <path d="M82 162 A34 34 0 0 1 71 137" fill="none" stroke="#d97706" stroke-width="3"></path>
+      <path d="M222 162 A34 34 0 0 0 237 134" fill="none" stroke="#d97706" stroke-width="3"></path>
+      <path d="M206 162 A36 36 0 0 1 188 130" fill="none" stroke="#d97706" stroke-width="3"></path>
+      <path d="M182 70 A44 44 0 0 1 199 116" fill="none" stroke="#d97706" stroke-width="3"></path>
+      <text x="68" y="142" font-size="16">${a}°</text>
+      <text x="222" y="142" font-size="16">${b}°</text>
+      <text x="160" y="174" font-size="16">${outside}°</text>
+      <text x="196" y="98" font-size="18">epsilon</text>
+    </svg>
+  `
+}
+
+function shadedSquareSvg(side) {
+  return `
+    <svg width="260" height="230" viewBox="0 0 260 230" role="img" aria-label="Square with shaded curved region">
+      <rect x="55" y="24" width="150" height="150" fill="#fff7ed" stroke="#c2410c" stroke-width="3"></rect>
+      <path d="M130 24 A75 75 0 0 1 205 99 A75 75 0 0 1 130 174 A75 75 0 0 1 55 99 A75 75 0 0 1 130 24 Z" fill="#f5d0fe" stroke="#c2410c" stroke-width="3"></path>
+      <path d="M130 24 A75 75 0 0 1 205 99 A75 75 0 0 1 130 174 A75 75 0 0 1 55 99 A75 75 0 0 1 130 24 Z" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4 4"></path>
+      <line x1="55" y1="190" x2="205" y2="190" stroke="#6d28d9" stroke-width="3"></line>
+      <text x="130" y="210" text-anchor="middle" font-size="15">${side} cm</text>
+    </svg>
+  `
+}
+
+function areaFormulaShapeSvg(shape) {
+  if (shape === 'circle') {
+    return `<svg width="240" height="170" viewBox="0 0 240 170"><circle cx="120" cy="82" r="58" fill="#f8fafc" stroke="#c2410c" stroke-width="3"></circle><line x1="120" y1="82" x2="178" y2="82" stroke="#6d28d9" stroke-width="3"></line><text x="150" y="76" font-size="16">r</text></svg>`
+  }
+  if (shape === 'semicircle') {
+    return `<svg width="240" height="170" viewBox="0 0 240 170"><path d="M62 122 A58 58 0 0 1 178 122 Z" fill="#f8fafc" stroke="#c2410c" stroke-width="3"></path><line x1="120" y1="122" x2="178" y2="122" stroke="#6d28d9" stroke-width="3"></line><text x="150" y="116" font-size="16">r</text></svg>`
+  }
+  if (shape === 'trapezoid') {
+    return `<svg width="240" height="170" viewBox="0 0 240 170"><polygon points="70,126 170,126 148,50 92,50" fill="#f8fafc" stroke="#c2410c" stroke-width="3"></polygon><line x1="70" y1="144" x2="170" y2="144" stroke="#6d28d9" stroke-width="3"></line><text x="120" y="162" text-anchor="middle">a</text><line x1="92" y1="34" x2="148" y2="34" stroke="#6d28d9" stroke-width="3"></line><text x="120" y="28" text-anchor="middle">c</text><line x1="120" y1="50" x2="120" y2="126" stroke="#6d28d9" stroke-width="3"></line><text x="128" y="92">h</text></svg>`
+  }
+  return `<svg width="240" height="170" viewBox="0 0 240 170"><polygon points="86,42 154,42 188,84 154,126 86,126 52,84" fill="#f8fafc" stroke="#c2410c" stroke-width="3"></polygon><line x1="86" y1="144" x2="154" y2="144" stroke="#6d28d9" stroke-width="3"></line><text x="120" y="162" text-anchor="middle">a</text></svg>`
 }
 
 function fractionHtml(numerator, denominator) {
